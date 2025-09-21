@@ -1,3 +1,4 @@
+// app.js
 import { watch, list, upsert, remove } from './api.js';
 
 let modelsCache = [];
@@ -7,43 +8,57 @@ let allEvents = [];
 const $ = (id) => document.getElementById(id);
 
 function renderCalendar(events, models) {
-  const calendar = $("calendar");
-  calendar.innerHTML = "";
-  const startOfMonth = currentMonth.startOf("month").startOf("week");
-  const endOfMonth = currentMonth.endOf("month").endOf("week");
-  let date = startOfMonth;
+  const cal = $("calendar");
+  cal.innerHTML = "";
 
-  let html = `<div class='grid grid-cols-7 gap-2 text-center font-semibold mb-2'>
-    <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
-  </div><div class='grid grid-cols-7 gap-2'>`;
+  // ชื่อเดือน + ปี
+  const monthHeader = document.createElement("div");
+  monthHeader.className = "text-center text-xl font-bold text-white mb-4";
+  monthHeader.textContent = currentMonth.format("MMMM YYYY");
+  cal.appendChild(monthHeader);
 
-  while (date.isBefore(endOfMonth)) {
-    const dayEvents = events.filter(ev => {
-      const start = dayjs(ev.startDate);
-      const end = ev.endDate ? dayjs(ev.endDate) : start;
-      return date.isBetween(start, end, 'day', '[]');
+  const grid = document.createElement("div");
+  grid.className = "grid grid-cols-7 gap-2";
+  cal.appendChild(grid);
+
+  const start = currentMonth.startOf("month").startOf("week");
+  const end = currentMonth.endOf("month").endOf("week");
+
+  let day = start.clone();
+  while (day.isBefore(end, "day")) {
+    const cell = document.createElement("div");
+    cell.className = "min-h-[100px] bg-neutral-800 rounded p-1 text-xs text-white";
+
+    const dayLabel = document.createElement("div");
+    dayLabel.className = "text-right text-neutral-400 mb-1";
+    dayLabel.textContent = day.date();
+    cell.appendChild(dayLabel);
+
+    // event ของวันนี้
+    const todays = events.filter(ev => {
+      const s = dayjs(ev.startDate);
+      const e = ev.endDate ? dayjs(ev.endDate) : s;
+      return day.isBetween(s, e, "day", "[]");
     });
 
-    html += `<div class='bg-neutral-800 rounded-lg min-h-[80px] p-1 text-sm'>
-      <div class='text-neutral-400 text-xs'>${date.date()}</div>`;
-
-    dayEvents.forEach(ev => {
+    todays.forEach(ev => {
       const model = models.find(m => m.name === ev.model) || { colorBG: "#6366f1", colorText: "#fff" };
-      html += `<div class='truncate px-1 rounded text-xs mb-1' style="background:${model.colorBG}; color:${model.colorText}">
-                ${ev.model} ${ev.eventName}</div>`;
+      const tag = document.createElement("div");
+      tag.className = "rounded px-1 mb-1 text-xs";
+      tag.style.background = model.colorBG;
+      tag.style.color = model.colorText;
+      tag.innerHTML = `<div>${ev.model || "-"}</div><div>${ev.eventName || "-"}</div>`;
+      cell.appendChild(tag);
     });
 
-    html += "</div>";
-    date = date.add(1, "day");
+    grid.appendChild(cell);
+    day = day.add(1, "day");
   }
-  html += "</div>";
-  calendar.innerHTML = html;
 }
 
 function renderEvents(events, models) {
   const container = $("eventsList");
   const header = $("eventsHeader");
-  if (!container) return;
   container.innerHTML = "";
 
   const filtered = events.filter(ev => {
@@ -54,95 +69,85 @@ function renderEvents(events, models) {
 
   header.textContent = `งานในเดือน ${currentMonth.format("MMMM YYYY")} (${filtered.length} งาน)`;
 
+  if (!filtered.length) {
+    container.innerHTML = `<p class="text-neutral-400">ไม่มีงานในเดือนนี้</p>`;
+    return;
+  }
+
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
   sorted.forEach(ev => {
     const model = models.find(m => m.name === ev.model) || { colorBG: "#6366f1", colorText: "#fff" };
     const card = document.createElement("div");
     card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 mb-4";
-    card.style.borderLeft = `8px solid ${model.colorBG}`;
+
     card.innerHTML = `
-      <div class="flex justify-between">
-        <div>
-          <span class="px-2 py-0.5 text-xs font-medium rounded-full mb-2 inline-block"
-            style="background:${model.colorBG}; color:${model.colorText}">${ev.model || "-"}</span>
-          <h3 class="text-xl font-bold">${ev.eventName || "-"}</h3>
-          <p class="text-sm text-neutral-400">${ev.location || ""}</p>
-          <p class="text-sm text-neutral-400">${ev.startDate || ""}${ev.endDate ? " – " + ev.endDate : ""}</p>
-          <p class="text-sm text-neutral-400">Staff: ${ev.staff || "-"}</p>
-          <p class="text-sm text-neutral-400">Note: ${ev.note || "-"}</p>
-        </div>
-        <div class="flex flex-col gap-2 items-end">
-          <button data-edit="${ev.id}" class="px-3 py-1 w-20 rounded-lg bg-indigo-500 text-white">แก้ไข</button>
-          <button data-del="${ev.id}" class="px-3 py-1 w-20 rounded-lg bg-rose-600 text-white">ลบ</button>
-        </div>
-      </div>`;
+      <div class="mb-2">
+        <span class="px-2 py-0.5 text-xs font-medium rounded" 
+          style="background:${model.colorBG};color:${model.colorText}">
+          ${ev.model || "-"}
+        </span>
+      </div>
+      <h3 class="text-xl font-bold text-white">${ev.eventName || "-"}</h3>
+      <p class="text-neutral-300">${ev.location || ""}</p>
+      <p class="text-neutral-400 text-sm">${ev.startDate}${ev.endDate ? " – " + ev.endDate : ""}</p>
+      <p class="text-neutral-400 text-sm">Staff: ${ev.staff || "-"}</p>
+      <p class="text-neutral-400 text-sm">Note: ${ev.note || "-"}</p>
+      <div class="flex gap-2 mt-4">
+        <button data-edit="${ev.id}" class="w-24 px-4 py-2 rounded bg-indigo-500 text-white">แก้ไข</button>
+        <button data-del="${ev.id}" class="w-24 px-4 py-2 rounded bg-rose-600 text-white">ลบ</button>
+      </div>
+    `;
     container.appendChild(card);
   });
 
-  container.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => openEventModal(btn.dataset.edit)));
-  container.querySelectorAll("[data-del]").forEach(btn => btn.addEventListener("click", async () => {
-    if (confirm("ยืนยันการลบงานนี้?")) await remove("events", btn.dataset.del);
-  }));
-}
-
-function fillModelSelect() {
-  const sel = document.querySelector("#eventForm select[name='model']");
-  sel.innerHTML = "";
-  modelsCache.forEach(m => {
-    const opt = document.createElement("option");
-    opt.value = m.name;
-    opt.textContent = m.name;
-    sel.appendChild(opt);
+  container.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", () => openEventModal(btn.dataset.edit));
+  });
+  container.querySelectorAll("[data-del]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (confirm("ยืนยันการลบงานนี้?")) await remove("events", btn.dataset.del);
+    });
   });
 }
-
-function openEventModal(id) {
-  const modal = $("eventModal");
-  const form = $("eventForm");
-  form.reset();
-  form.id.value = id || "";
-  fillModelSelect();
-  if (id) {
-    const ev = allEvents.find(e => e.id === id);
-    if (ev) Object.entries(ev).forEach(([k, v]) => { if (form[k]) form[k].value = v; });
-  }
-  modal.classList.remove("hidden");
-}
-function closeEventModal() { $("eventModal").classList.add("hidden"); }
-function openModelModal() { $("modelModal").classList.remove("hidden"); }
-function closeModelModal() { $("modelModal").classList.add("hidden"); }
 
 function renderStats(events) {
   const now = dayjs();
-  $("totalThisYear").textContent = events.filter(ev => dayjs(ev.startDate).isSame(now, "year")).length;
-  $("pastEvents").textContent = events.filter(ev => dayjs(ev.endDate || ev.startDate).isBefore(now)).length;
-  $("upcomingEvents").textContent = events.filter(ev => dayjs(ev.startDate).isAfter(now)).length;
+  const thisYear = events.filter(ev => dayjs(ev.startDate).isSame(now, "year"));
+  const past = events.filter(ev => dayjs(ev.endDate || ev.startDate).isBefore(now, "day"));
+  const upcoming = events.filter(ev => dayjs(ev.startDate).isAfter(now, "day"));
+
+  $("statTotal").textContent = thisYear.length;
+  $("statPast").textContent = past.length;
+  $("statUpcoming").textContent = upcoming.length;
+}
+
+function render(events, models) {
+  renderCalendar(events, models);
+  renderStats(events);
+  renderEvents(events, models);
 }
 
 function init() {
-  $("addEventBtn").addEventListener("click", () => openEventModal());
-  $("addModelBtn").addEventListener("click", () => openModelModal());
-  $("closeEventModal").addEventListener("click", closeEventModal);
-  $("closeModelModal").addEventListener("click", closeModelModal);
-
-  $("eventForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const data = Object.fromEntries(new FormData(form).entries());
-    data.paidDeposit = form.paidDeposit.checked;
-    data.paidFull = form.paidFull.checked;
-    await upsert("events", data);
-    closeEventModal();
+  watch("events", async (evs) => {
+    allEvents = evs;
+    render(allEvents, modelsCache);
   });
 
-  $("modelForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    await upsert("models", data);
-    closeModelModal();
+  watch("models", (mds) => {
+    modelsCache = mds;
+    render(allEvents, modelsCache);
   });
 
-  watch("models", (models) => { modelsCache = models; renderCalendar(allEvents, models); renderEvents(allEvents, models); });
-  watch("events", (events) => { allEvents = events; renderCalendar(events, modelsCache); renderEvents(events, modelsCache); renderStats(events); });
+  // ปุ่มเปลี่ยนเดือน
+  $("prevMonth").addEventListener("click", () => {
+    currentMonth = currentMonth.subtract(1, "month");
+    render(allEvents, modelsCache);
+  });
+  $("nextMonth").addEventListener("click", () => {
+    currentMonth = currentMonth.add(1, "month");
+    render(allEvents, modelsCache);
+  });
 }
+
 init();
