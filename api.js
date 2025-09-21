@@ -1,8 +1,10 @@
+// api.js — Firestore CRUD + Realtime
 import { db } from './firebase.js';
 import { 
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// ดึงข้อมูลทั้งหมด (ครั้งเดียว)
 export async function list(entity) {
   const q = entity === 'events'
     ? query(collection(db, entity), orderBy('startDate','asc'))
@@ -12,6 +14,7 @@ export async function list(entity) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+// watch realtime
 export function watch(entity, cb) {
   const q = entity === 'events'
     ? query(collection(db, entity), orderBy('startDate','asc'))
@@ -23,6 +26,7 @@ export function watch(entity, cb) {
   });
 }
 
+// เพิ่ม / อัปเดต
 export async function upsert(entity, data) {
   if (data.id) {
     const ref = doc(db, entity, data.id);
@@ -34,6 +38,7 @@ export async function upsert(entity, data) {
   }
 }
 
+// ลบ
 export async function remove(entity, id) {
   const ref = doc(db, entity, id);
   await deleteDoc(ref);
