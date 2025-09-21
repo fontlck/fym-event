@@ -1,218 +1,107 @@
-// app.js — UI + logic
 import { watch, list, upsert, remove } from './api.js';
 
 let modelsCache = [];
-let allEvents = [];
 let currentMonth = dayjs();
+let allEvents = [];
 
-// ==== helpers ====
-const $ = (id) => document.getElementById(id);
-const eventModal = () => $("#eventModal");
-const modelModal = () => $("#modelModal");
-const eventForm = () => $("#eventForm");
-const modelForm = () => $("#modelForm");
+// Modal Functions
+window.openEventModal = (id) => {
+  document.getElementById("eventModal").classList.remove("hidden");
+};
+window.closeEventModal = () => {
+  document.getElementById("eventModal").classList.add("hidden");
+};
+window.openModelModal = () => {
+  document.getElementById("modelModal").classList.remove("hidden");
+};
+window.closeModelModal = () => {
+  document.getElementById("modelModal").classList.add("hidden");
+};
 
-function openModal(el){ el.classList.remove("hidden"); }
-function closeModal(el){ el.classList.add("hidden"); }
+// Render Events
+function renderEvents(events, models) {
+  const container = document.getElementById("eventsList");
+  const header = document.getElementById("eventsHeader");
+  if (!container) return;
 
-// ==== calendar ====
-function renderCalendar(events, models){
-  const grid = $("#calendarGrid");
-  const label = $("#monthLabel");
-  if (!grid) return;
+  container.innerHTML = "";
 
-  label.textContent = currentMonth.format("MMMM YYYY");
-  grid.innerHTML = "";
-
-  const start = currentMonth.startOf("month").startOf("week");
-  const end = currentMonth.endOf("month").endOf("week");
-
-  let d = start;
-  while (d.isBefore(end) || d.isSame(end, "day")){
-    const inMonth = d.month() === currentMonth.month();
-    const cell = document.createElement("div");
-    cell.className = "min-h-[90px] p-1 rounded border " + (inMonth ? "border-neutral-700" : "border-neutral-900 bg-neutral-900 text-neutral-600");
-
-    // date label
-    const top = document.createElement("div");
-    top.className = "text-xs mb-1 text-neutral-400";
-    top.textContent = d.date();
-    cell.appendChild(top);
-
-    // events today
-    const todays = events.filter(ev=>{
-      const s = dayjs(ev.startDate);
-      const e = ev.endDate ? dayjs(ev.endDate) : s;
-      return d.isBetween(s, e, "day", "[]");
-    });
-
-    todays.forEach(ev=>{
-      const m = models.find(x=>x.name === ev.model) || { colorBG:"#6366f1", colorText:"#fff" };
-      const tag = document.createElement("div");
-      tag.className = "rounded text-[10px] leading-tight px-1 py-0.5 mb-1";
-      tag.style.background = m.colorBG;
-      tag.style.color = m.colorText;
-      tag.innerHTML = `<div class="truncate">${ev.model || "-"}</div><div class="truncate opacity-90">${ev.eventName || "-"}</div>`;
-      cell.appendChild(tag);
-    });
-
-    grid.appendChild(cell);
-    d = d.add(1,"day");
-  }
-
-  // legend
-  const leg = $("#legend");
-  leg.innerHTML = "";
-  models.forEach(m=>{
-    const b = document.createElement("div");
-    b.className = "flex items-center gap-2 text-xs px-2 py-1 rounded border border-neutral-700";
-    b.innerHTML = `<span class="inline-block w-3 h-3 rounded" style="background:${m.colorBG}"></span><span>${m.name}</span>`;
-    leg.appendChild(b);
-  });
-}
-
-// ==== stats ====
-function renderStats(events){
-  const now = dayjs();
-  const year = now.year();
-  const total = events.filter(e=>dayjs(e.startDate).year()===year).length;
-  const past = events.filter(e=>dayjs(e.endDate||e.startDate).isBefore(now,"day")).length;
-  const upcoming = events.length - past;
-  $("#statTotal").textContent = total;
-  $("#statPast").textContent = past;
-  $("#statUpcoming").textContent = upcoming;
-}
-
-// ==== cards ====
-function renderEvents(events, models){
-  const list = $("#eventsList");
-  const header = $("#eventsHeader");
-  if (!list) return;
-  list.innerHTML = "";
-
-  const filtered = events.filter(ev=>{
-    const s = dayjs(ev.startDate);
-    const e = ev.endDate ? dayjs(ev.endDate) : s;
-    return s.isSame(currentMonth,"month") || e.isSame(currentMonth,"month");
+  const filtered = events.filter(ev => {
+    const start = dayjs(ev.startDate);
+    const end = ev.endDate ? dayjs(ev.endDate) : start;
+    return start.isSame(currentMonth, "month") || end.isSame(currentMonth, "month");
   });
 
-  header.textContent = `${currentMonth.format("MMMM YYYY")} (${filtered.length} งาน)`;
+  header.textContent = `งานในเดือน ${currentMonth.format("MMMM YYYY")} (${filtered.length} งาน)`;
 
-  if (!filtered.length){
-    list.innerHTML = `<p class="text-neutral-400">ไม่มีงานในเดือนนี้</p>`;
+  if (!filtered.length) {
+    container.innerHTML = `<p class="text-neutral-400">ไม่มีงานในเดือนนี้</p>`;
     return;
   }
 
-  const sorted = [...filtered].sort((a,b)=> new Date(a.startDate) - new Date(b.startDate));
+  const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-  sorted.forEach(ev=>{
-    const m = models.find(x=>x.name === ev.model) || { colorBG:"#6366f1", colorText:"#fff" };
+  sorted.forEach(ev => {
+    const model = models.find(m => m.name === ev.model) || { colorBG: "#6366f1", colorText: "#fff" };
     const card = document.createElement("div");
-    card.className = "bg-neutral-900 rounded-2xl shadow p-4 flex justify-between items-center border-l-8";
-    card.style.borderLeftColor = m.colorBG;
+    card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 mb-4 flex flex-col md:flex-row justify-between";
+    card.style.borderLeft = `8px solid ${model.colorBG}`;
+
     card.innerHTML = `
-      <div class="flex-1 min-w-0">
-        <span class="px-2 py-0.5 text-xs font-medium rounded-full mb-2 inline-block" style="background:${m.colorBG}; color:${m.colorText}">${ev.model || "-"}</span>
-        <h3 class="text-xl font-bold">${ev.eventName || "-"}</h3>
-        <p class="text-sm text-neutral-400">${ev.location || ""}</p>
-        <p class="text-sm text-neutral-500">${ev.startDate || ""}${ev.endDate ? " – " + ev.endDate : ""}</p>
+      <div>
+        <span class="px-2 py-0.5 text-xs font-medium rounded-full mb-2 inline-block"
+          style="background:${model.colorBG}; color:${model.colorText}">${ev.model || "-"}</span>
+        <h3 class="text-xl font-bold">${ev.eventName}</h3>
+        <p class="text-neutral-400">${ev.location || ""}</p>
+        <p class="text-sm text-neutral-400">${ev.startDate}${ev.endDate ? " – " + ev.endDate : ""}</p>
       </div>
-      <div class="flex gap-2">
-        <button data-edit="${ev.id}" class="w-24 text-center px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400">แก้ไข</button>
-        <button data-del="${ev.id}" class="w-24 text-center px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500">ลบ</button>
+      <div class="flex flex-row gap-2 items-start md:items-end">
+        <button data-edit="${ev.id}" class="w-20 text-center px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-medium">แก้ไข</button>
+        <button data-del="${ev.id}" class="w-20 text-center px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium">ลบ</button>
       </div>
     `;
-    list.appendChild(card);
+    container.appendChild(card);
   });
 
-  // bind buttons
-  list.querySelectorAll("[data-edit]").forEach(btn=>{
-    btn.addEventListener("click", ()=> openEventModal(btn.dataset.edit));
+  container.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", () => openEventModal(btn.dataset.edit));
   });
-  list.querySelectorAll("[data-del]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
+  container.querySelectorAll("[data-del]").forEach(btn => {
+    btn.addEventListener("click", async () => {
       if (confirm("ยืนยันการลบงานนี้?")) await remove("events", btn.dataset.del);
     });
   });
 }
 
-// ==== modals ====
-function openEventModal(id=null){
-  // fill model options
-  const sel = eventForm().querySelector('select[name="model"]');
-  sel.innerHTML = modelsCache.map(m=>`<option value="${m.name}">${m.name}</option>`).join("");
+// Init
+function init() {
+  const addEventBtn = document.getElementById("addEventBtn");
+  const addModelBtn = document.getElementById("addModelBtn");
+  const eventForm = document.getElementById("eventForm");
+  const modelForm = document.getElementById("modelForm");
 
-  // reset / fill
-  eventForm().reset();
-  if (id){
-    const ev = allEvents.find(e=>e.id===id);
-    if (ev){
-      Object.entries(ev).forEach(([k,v])=>{
-        const el = eventForm().querySelector(`[name="${k}"]`);
-        if (!el) return;
-        if (el.type==="checkbox"){ el.checked = !!v; }
-        else { el.value = v; }
-      });
-    }
-  }
-  openModal(eventModal());
-}
+  if (addEventBtn) addEventBtn.addEventListener("click", () => openEventModal());
+  if (addModelBtn) addModelBtn.addEventListener("click", () => openModelModal());
 
-// ==== init ====
-function init(){
-  // month controls
-  $("#prevMonth").addEventListener("click", ()=>{
-    currentMonth = currentMonth.subtract(1,"month");
-    renderCalendar(allEvents, modelsCache);
-    renderEvents(allEvents, modelsCache);
-  });
-  $("#nextMonth").addEventListener("click", ()=>{
-    currentMonth = currentMonth.add(1,"month");
-    renderCalendar(allEvents, modelsCache);
-    renderEvents(allEvents, modelsCache);
-  });
-
-  // open modals
-  $("#addEventBtn").addEventListener("click", ()=> openEventModal());
-  $("#addModelBtn").addEventListener("click", ()=> openModal(modelModal()));
-
-  // close modals
-  $("#closeEvent").addEventListener("click", ()=> closeModal(eventModal()));
-  $("#cancelEvent").addEventListener("click", ()=> closeModal(eventModal()));
-  $("#closeModel").addEventListener("click", ()=> closeModal(modelModal()));
-  $("#cancelModel").addEventListener("click", ()=> closeModal(modelModal()));
-
-  // submit forms
-  eventForm().addEventListener("submit", async (e)=>{
+  if (eventForm) eventForm.addEventListener("submit", e => {
     e.preventDefault();
-    const fd = new FormData(eventForm());
-    const data = Object.fromEntries(fd.entries());
-    data.paidDeposit = eventForm().querySelector('input[name="paidDeposit"]').checked;
-    data.paidFull = eventForm().querySelector('input[name="paidFull"]').checked;
-    await upsert("events", data);
-    closeModal(eventModal());
+    closeEventModal();
   });
 
-  modelForm().addEventListener("submit", async (e)=>{
+  if (modelForm) modelForm.addEventListener("submit", e => {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(modelForm()).entries());
-    await upsert("models", data);
-    closeModal(modelModal());
+    closeModelModal();
   });
 
-  // data streams
-  watch("models", (models)=>{
-    modelsCache = models;
-    renderCalendar(allEvents, modelsCache);
+  watch("models", data => {
+    modelsCache = data;
     renderEvents(allEvents, modelsCache);
   });
 
-  watch("events", (events)=>{
-    allEvents = events;
-    renderCalendar(allEvents, modelsCache);
-    renderStats(allEvents);
+  watch("events", data => {
+    allEvents = data;
     renderEvents(allEvents, modelsCache);
-  }, "startDate");
+  });
 }
 
 init();
