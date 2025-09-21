@@ -1,16 +1,14 @@
-// firebase.js
+// firebase.js — config
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 👉 ใส่ config โปรเจกต์ของคุณให้ถูกต้อง
-const firebaseConfig = {
-  apiKey: "AIzaSyB-G1eSiwJYQgjALiwMqOb2x1sNPqa19i0",
+export const firebaseConfig = {
+  apiKey: "AIzaSyCNVv93FykHDyNbpCldFt6DcdR2uHrx0Yo",
   authDomain: "photobooth-booking.firebaseapp.com",
   projectId: "photobooth-booking",
   storageBucket: "photobooth-booking.appspot.com",
   messagingSenderId: "231205524281",
-  appId: "1:231205524281:web:322d26f5ac15da75d64ee8",
-  measurementId: "G-DEBXZD5CPK"
+  appId: "1:231205524281:web:322d26f5ac15da75d64ee8"
 };
 
 const app = initializeApp(firebaseConfig);
