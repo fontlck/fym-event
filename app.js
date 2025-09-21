@@ -6,9 +6,10 @@ let currentMonth = dayjs();
 
 const $ = (id) => document.getElementById(id);
 
-// Calendar rendering
 function renderCalendar(events, models) {
   const cal = $('calendar');
+  const label = $('monthLabel');
+  if (label) label.textContent = currentMonth.format('MMMM YYYY');
   if (!cal) return;
   const start = currentMonth.startOf('month').startOf('week');
   const end = currentMonth.endOf('month').endOf('week');
@@ -37,7 +38,6 @@ function renderCalendar(events, models) {
   cal.innerHTML = html;
 }
 
-// Stats
 function renderStats(events) {
   const now = dayjs();
   const year = now.year();
@@ -49,7 +49,6 @@ function renderStats(events) {
   $('statUpcoming').textContent = upcoming;
 }
 
-// Events list
 function renderEvents(events, models) {
   const container = $('eventsList');
   const header = $('eventsHeader');
@@ -81,13 +80,11 @@ function renderEvents(events, models) {
   container.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{if(confirm('ยืนยันการลบ?'))await remove('events',b.dataset.del);}));
 }
 
-// Modal helpers
 function openEventModal(){ $('eventModal').classList.remove('hidden'); }
 function closeEventModal(){ $('eventModal').classList.add('hidden'); }
 function openModelModal(){ $('modelModal').classList.remove('hidden'); }
 function closeModelModal(){ $('modelModal').classList.add('hidden'); }
 
-// Init
 function init(){
   $('addEventBtn').addEventListener('click',()=>openEventModal());
   $('addModelBtn').addEventListener('click',()=>openModelModal());
