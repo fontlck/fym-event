@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>FYM EVENT</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 </head>
 <body class="bg-neutral-950 text-white font-sans">
 
@@ -18,33 +19,6 @@
 
   <!-- Main -->
   <main class="p-6 space-y-6">
-    <!-- Search + Upcoming -->
-    <section class="grid md:grid-cols-2 gap-6">
-      <div class="bg-neutral-900 rounded-2xl shadow p-4 border border-neutral-800">
-        <h2 class="text-lg font-semibold mb-2">วันนี้</h2>
-        <input id="searchInput" placeholder="ค้นหา: ชื่องาน / สถานที่ / staff"
-          class="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-sm mb-3">
-        <div>
-          <h3 class="text-indigo-400 font-medium mb-2">Upcoming</h3>
-          <div id="upcomingList" class="space-y-2 text-sm"></div>
-        </div>
-      </div>
-
-      <!-- Calendar -->
-      <div class="bg-neutral-900 rounded-2xl shadow p-4 border border-neutral-800">
-        <div class="flex justify-between items-center mb-2">
-          <button id="prevMonth" class="text-neutral-400 hover:text-white">◀</button>
-          <h2 id="monthLabel" class="text-lg font-bold">ปฏิทิน</h2>
-          <button id="nextMonth" class="text-neutral-400 hover:text-white">▶</button>
-        </div>
-        <div class="grid grid-cols-7 gap-2 text-center text-sm text-neutral-400 mb-2">
-          <div>จันทร์</div><div>อังคาร</div><div>พุธ</div><div>พฤหัสฯ</div><div>ศุกร์</div><div>เสาร์</div><div>อาทิตย์</div>
-        </div>
-        <div id="calendarGrid" class="grid grid-cols-7 gap-2 min-h-[300px]"></div>
-        <div id="legend" class="flex flex-wrap gap-2 mt-4"></div>
-      </div>
-    </section>
-
     <!-- Card View -->
     <section>
       <h2 class="text-lg font-semibold mb-4">ทั้งหมด</h2>
@@ -53,54 +27,6 @@
       </div>
     </section>
   </main>
-
-  <!-- Dialog: Add/Edit Event -->
-  <dialog id="eventDialog" class="p-0 rounded-xl w-11/12 md:w-2/3">
-    <form id="eventForm" class="bg-neutral-900 p-6 space-y-4">
-      <input type="hidden" name="id">
-      <h3 class="text-lg font-bold mb-4">Add / Edit Event</h3>
-      <div class="grid md:grid-cols-2 gap-4">
-        <input name="eventName" placeholder="ชื่องาน" class="px-3 py-2 rounded bg-neutral-800">
-        <input name="location" placeholder="สถานที่" class="px-3 py-2 rounded bg-neutral-800">
-        <input name="mapLink" placeholder="Google Map link" class="px-3 py-2 rounded bg-neutral-800">
-        <select name="model" class="px-3 py-2 rounded bg-neutral-800"></select>
-        <input type="date" name="startDate" class="px-3 py-2 rounded bg-neutral-800">
-        <input type="date" name="endDate" class="px-3 py-2 rounded bg-neutral-800">
-        <input name="staff" placeholder="Staff" class="px-3 py-2 rounded bg-neutral-800">
-        <input type="date" name="installDate" class="px-3 py-2 rounded bg-neutral-800">
-        <input type="time" name="installTime" class="px-3 py-2 rounded bg-neutral-800">
-        <input type="time" name="openTime" class="px-3 py-2 rounded bg-neutral-800">
-        <input type="time" name="closeTime" class="px-3 py-2 rounded bg-neutral-800">
-        <input name="price" placeholder="ราคา" class="px-3 py-2 rounded bg-neutral-800">
-        <input name="transportFee" placeholder="ค่าขนส่ง" class="px-3 py-2 rounded bg-neutral-800">
-      </div>
-      <textarea name="note" placeholder="หมายเหตุ" class="w-full px-3 py-2 rounded bg-neutral-800"></textarea>
-      <div class="flex space-x-4">
-        <label><input type="checkbox" name="paidDeposit"> มัดจำแล้ว</label>
-        <label><input type="checkbox" name="paidFull"> ชำระครบแล้ว</label>
-      </div>
-      <div class="flex justify-end space-x-2">
-        <button type="button" onclick="eventDialog.close()" class="px-4 py-2 rounded bg-neutral-700">ยกเลิก</button>
-        <button type="submit" class="px-4 py-2 rounded bg-lime-500 text-black">บันทึก</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Dialog: Add/Edit Model -->
-  <dialog id="modelDialog" class="p-0 rounded-xl w-96">
-    <form id="modelForm" class="bg-neutral-900 p-6 space-y-4">
-      <input type="hidden" name="id">
-      <h3 class="text-lg font-bold mb-4">Add / Edit Model</h3>
-      <input name="name" placeholder="ชื่อโมเดล" class="w-full px-3 py-2 rounded bg-neutral-800">
-      <input name="size" placeholder="ขนาด" class="w-full px-3 py-2 rounded bg-neutral-800">
-      <input name="colorBG" placeholder="สีพื้นหลัง (hex)" class="w-full px-3 py-2 rounded bg-neutral-800">
-      <input name="colorText" placeholder="สีตัวอักษร (hex)" class="w-full px-3 py-2 rounded bg-neutral-800">
-      <div class="flex justify-end space-x-2">
-        <button type="button" onclick="modelDialog.close()" class="px-4 py-2 rounded bg-neutral-700">ยกเลิก</button>
-        <button type="submit" class="px-4 py-2 rounded bg-lime-500 text-black">บันทึก</button>
-      </div>
-    </form>
-  </dialog>
 
   <script type="module" src="./app.js"></script>
 </body>

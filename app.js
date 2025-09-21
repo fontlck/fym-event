@@ -1,164 +1,75 @@
-// app.js — main UI logic
-import * as API from './api.js';
+import { watch, list, remove } from './api.js';
 
-// state
-const state = {
-  events: [],
-  models: [],
-};
+let modelsCache = [];
 
-// elements
-const addEventBtn = document.getElementById('addEventBtn');
-const addModelBtn = document.getElementById('addModelBtn');
-const searchInput = document.getElementById('searchInput');
-const eventDialog = document.getElementById('eventDialog');
-const modelDialog = document.getElementById('modelDialog');
-const eventForm = document.getElementById('eventForm');
-const modelForm = document.getElementById('modelForm');
-const calendarGrid = document.getElementById('calendarGrid');
-const monthLabel = document.getElementById('monthLabel');
-const prevMonthBtn = document.getElementById('prevMonth');
-const nextMonthBtn = document.getElementById('nextMonth');
-const legend = document.getElementById('legend');
-const eventsList = document.getElementById('eventsList'); // ใช้แทนตาราง
+function renderEvents(events, models) {
+  const container = document.getElementById("eventsList");
+  if (!container) return;
 
-// helpers
-function fmtDate(d) {
-  if (!d) return '';
-  return new Date(d).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+  container.innerHTML = "";
 
-function normalizeDate(value) {
-  if (!value) return '';
-  if (value instanceof Date) return value.toISOString().split("T")[0];
-  return String(value).split("T")[0];
-}
-
-// dialogs
-function openEventDialog(id = null) {
-  if (id) {
-    const e = state.events.find(x => x.id === id);
-    for (let k in e) {
-      if (eventForm[k]) eventForm[k].value = e[k];
-    }
-    eventForm.id.value = e.id;
-  } else {
-    eventForm.reset();
-    eventForm.id.value = '';
+  if (events.length === 0) {
+    container.innerHTML = `<p class="text-neutral-400">ไม่มีงานในระบบ</p>`;
+    return;
   }
-  eventDialog.showModal();
-}
 
-function openModelDialog(id = null) {
-  if (id) {
-    const m = state.models.find(x => x.id === id);
-    for (let k in m) {
-      if (modelForm[k]) modelForm[k].value = m[k];
-    }
-    modelForm.id.value = m.id;
-  } else {
-    modelForm.reset();
-    modelForm.id.value = '';
-  }
-  modelDialog.showModal();
-}
+  events.forEach(ev => {
+    const model = models.find(m => m.name === ev.model) || { colorBG: "#333", colorText: "#fff" };
 
-// render card view
-function render() {
-  const q = (searchInput.value || '').toLowerCase();
-  const filtered = state.events.filter(e =>
-    !q || [e.eventName, e.location, e.staff, e.model].some(s => (s || '').toLowerCase().includes(q))
-  );
+    const card = document.createElement("div");
+    card.className = "bg-neutral-900 rounded-2xl border border-neutral-800 shadow p-6 hover:shadow-indigo-500/20 transition";
 
-  eventsList.innerHTML = filtered.map(e => {
-    const m = state.models.find(x => x.name === e.model);
-    return `
-      <div class="bg-neutral-900 rounded-2xl shadow p-6 border border-neutral-800">
-        <div class="flex justify-between items-start mb-4">
-          <div>
-            <h2 class="text-xl font-bold text-white">${e.eventName || '-'}</h2>
-            <p class="text-sm text-neutral-400">${fmtDate(e.startDate)}${e.endDate ? ' – ' + fmtDate(e.endDate) : ''}</p>
+    card.innerHTML = `
+      <div class="flex justify-between items-start gap-4 mb-3">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[11px] px-2 py-0.5 rounded-full"
+              style="background:${model.colorBG};color:${model.colorText}">${ev.model || '-'}</span>
+            <span class="text-xs text-neutral-400 truncate">${dayjs(ev.startDate).format("MMM YYYY")}</span>
           </div>
-          <div class="space-x-2">
-            <button class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white" data-id="${e.id}">แก้ไข</button>
-            <button class="px-3 py-1.5 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white" data-del="${e.id}">ลบ</button>
-          </div>
+          <h3 class="text-xl font-bold truncate">${ev.eventName || '-'}</h3>
+          <p class="text-sm text-neutral-400">${ev.startDate} – ${ev.endDate || ev.startDate}</p>
         </div>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          <div><span class="text-neutral-400">📍 สถานที่:</span> ${e.location || '-'}</div>
-          <div><span class="text-neutral-400">🖼 โมเดล:</span> ${e.model || '-'}</div>
-          <div><span class="text-neutral-400">🛠 ติดตั้ง:</span> ${fmtDate(e.installDate)} ${e.installTime || ''}</div>
-          <div><span class="text-neutral-400">👤 Staff:</span> ${e.staff || '-'}</div>
-          <div><span class="text-neutral-400">⏰ เวลา:</span> ${[e.openTime, e.closeTime].filter(Boolean).join(' - ')}</div>
-          <div><span class="text-neutral-400">💰 ราคา:</span> ${e.price || '-'}</div>
-          <div><span class="text-neutral-400">📌 สถานะ:</span> ${(e.paidDeposit ? 'มัดจำ ' : '') + (e.paidFull ? 'ชำระครบ' : '')}</div>
-          <div class="col-span-2"><span class="text-neutral-400">📝 Note:</span> ${e.note || ''}</div>
+        <div class="flex gap-2 shrink-0">
+          <button onclick="editEvent('${ev.id}')" class="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white">แก้ไข</button>
+          <button onclick="deleteEvent('${ev.id}')" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white">ลบ</button>
         </div>
       </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 text-sm leading-relaxed">
+        <div><span class="text-neutral-400">📍 สถานที่:</span> ${ev.location || "-"}</div>
+        <div><span class="text-neutral-400">⏰ เวลา:</span> ${(ev.openTime || "")} - ${(ev.closeTime || "")}</div>
+        <div><span class="text-neutral-400">🛠 ติดตั้ง:</span> ${(ev.installDate || "-")} ${(ev.installTime || "")}</div>
+        <div><span class="text-neutral-400">👤 Staff:</span> ${ev.staff || "-"}</div>
+        <div><span class="text-neutral-400">💰 ราคา:</span> ${ev.price || "-"}</div>
+        <div><span class="text-neutral-400">🚚 ค่าขนส่ง:</span> ${ev.transportFee || "-"}</div>
+        <div><span class="text-neutral-400">📌 สถานะ:</span> 
+          ${ev.paidFull ? "ชำระครบแล้ว" : ev.paidDeposit ? "มัดจำแล้ว" : "รอชำระ"}
+        </div>
+        <div class="sm:col-span-2"><span class="text-neutral-400">📝 Note:</span> ${ev.note || "-"}</div>
+      </div>
     `;
-  }).join('');
 
-  // bind edit/delete
-  eventsList.querySelectorAll('button[data-id]').forEach(b =>
-    b.onclick = () => openEventDialog(b.dataset.id)
-  );
-  eventsList.querySelectorAll('button[data-del]').forEach(b =>
-    b.onclick = async () => {
-      if(confirm('ยืนยันการลบงานนี้?')) await API.remove('events', b.dataset.del);
-    }
-  );
+    container.appendChild(card);
+  });
 }
 
-// render models legend
-function renderModelsToSelect() {
-  const modelSelect = eventForm.model;
-  modelSelect.innerHTML = ['<option value=""></option>']
-    .concat(state.models.map(m=>`<option value="${m.name}">${m.name}</option>`))
-    .join('');
-  legend.innerHTML = state.models
-    .map(m=>`<span class="text-xs px-2 py-1 rounded-full" style="background:${m.colorBG};color:${m.colorText}">${m.name}</span>`)
-    .join(' ');
-}
+// global functions for buttons
+window.editEvent = (id) => {
+  alert("Edit event: " + id); // you can hook into dialog open
+};
+window.deleteEvent = async (id) => {
+  if(confirm("ยืนยันการลบงานนี้?")) {
+    await remove("events", id);
+  }
+};
 
-// init
-function init() {
-  API.watch('events', rows => {
-    state.events = rows;
-    render();
+async function init() {
+  modelsCache = await list("models");
+
+  watch("events", (data) => {
+    renderEvents(data, modelsCache);
   });
-
-  API.watch('models', rows => {
-    state.models = rows;
-    renderModelsToSelect();
-    render();
-  });
-
-  addEventBtn.onclick = () => openEventDialog();
-  addModelBtn.onclick = () => openModelDialog();
-
-  // save event
-  eventForm.onsubmit = async e => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(eventForm).entries());
-    if (data.id) {
-      await API.upsert('events', data);
-    } else {
-      await API.upsert('events', data);
-    }
-    eventDialog.close();
-  };
-
-  // save model
-  modelForm.onsubmit = async e => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(modelForm).entries());
-    if (data.id) {
-      await API.upsert('models', data);
-    } else {
-      await API.upsert('models', data);
-    }
-    modelDialog.close();
-  };
 }
 
 init();
