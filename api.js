@@ -4,20 +4,29 @@ import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// ดึงข้อมูลทั้งหมด (ครั้งเดียว)
 export async function list(entity) {
-  const q = query(collection(db, entity));
+  const q = entity === 'events'
+    ? query(collection(db, entity), orderBy('startDate','asc'))
+    : collection(db, entity);
+
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
+// watch realtime
 export function watch(entity, cb) {
-  const q = query(collection(db, entity), orderBy('startDate','asc'));
+  const q = entity === 'events'
+    ? query(collection(db, entity), orderBy('startDate','asc'))
+    : collection(db, entity);
+
   return onSnapshot(q, (snap)=> {
     const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     cb(data);
   });
 }
 
+// เพิ่ม / อัปเดต
 export async function upsert(entity, data) {
   if (data.id) {
     const ref = doc(db, entity, data.id);
@@ -29,6 +38,7 @@ export async function upsert(entity, data) {
   }
 }
 
+// ลบ
 export async function remove(entity, id) {
   const ref = doc(db, entity, id);
   await deleteDoc(ref);
