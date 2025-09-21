@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FYM EVENT</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 </head>
 <body class="bg-neutral-950 text-white font-sans">
-
   <!-- Header -->
   <header class="flex items-center justify-between px-6 py-4 bg-neutral-900 border-b border-neutral-800">
-    <h1 class="text-2xl font-bold text-lime-400">📸 FYM EVENT</h1>
-    <div class="space-x-2">
-      <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white">Add model</button>
-      <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-500 hover:bg-lime-400 text-black">Add event</button>
+    <h1 class="text-2xl font-bold text-white">FYM EVENT</h1>
+    <div class="flex items-center gap-2">
+      <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white">Add Model</button>
+      <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-500 hover:bg-lime-400 text-black">Add Event</button>
+      <div class="ml-4 flex gap-2">
+        <button id="prevMonth" class="px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white">‹</button>
+        <button id="nextMonth" class="px-3 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white">›</button>
+      </div>
     </div>
   </header>
 
@@ -32,15 +35,32 @@
       <div id="legend" class="flex flex-wrap gap-2 mt-4"></div>
     </section>
 
+    <!-- Stats Section -->
+    <section class="grid md:grid-cols-3 gap-4 mt-6">
+      <div class="bg-neutral-900 rounded-xl p-6 border border-neutral-800 text-center">
+        <h3 class="text-2xl font-bold text-lime-400" id="statTotal">0</h3>
+        <p class="text-sm text-neutral-400">จำนวนงานในปีนี้</p>
+      </div>
+      <div class="bg-neutral-900 rounded-xl p-6 border border-neutral-800 text-center">
+        <h3 class="text-2xl font-bold text-indigo-400" id="statPast">0</h3>
+        <p class="text-sm text-neutral-400">งานที่ผ่านไปแล้ว</p>
+      </div>
+      <div class="bg-neutral-900 rounded-xl p-6 border border-neutral-800 text-center">
+        <h3 class="text-2xl font-bold text-rose-400" id="statUpcoming">0</h3>
+        <p class="text-sm text-neutral-400">งานที่กำลังจะมาถึง</p>
+      </div>
+    </section>
+
     <!-- Card View -->
     <section>
-      <h2 class="text-lg font-semibold mb-4">ทั้งหมด</h2>
-      <div id="eventsList" class="grid md:grid-cols-2 gap-6">
-        <!-- app.js จะ render การ์ดลงตรงนี้ -->
+      <div class="flex items-center justify-between mb-3">
+        <h2 id="eventsHeader" class="text-lg font-semibold">งานในเดือนนี้</h2>
       </div>
+      <div id="eventsList" class="space-y-4"></div>
     </section>
   </main>
 
+  <!-- Modal definitions same as before (omitted for brevity) -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>

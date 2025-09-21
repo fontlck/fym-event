@@ -1,22 +1,17 @@
+// api.js — Firestore CRUD + Realtime
 import { db } from './firebase.js';
 import { 
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 export async function list(entity) {
-  const q = entity === 'events'
-    ? query(collection(db, entity), orderBy('startDate','asc'))
-    : collection(db, entity);
-
+  const q = query(collection(db, entity));
   const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
 export function watch(entity, cb) {
-  const q = entity === 'events'
-    ? query(collection(db, entity), orderBy('startDate','asc'))
-    : collection(db, entity);
-
+  const q = query(collection(db, entity), orderBy('startDate','asc'));
   return onSnapshot(q, (snap)=> {
     const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     cb(data);
