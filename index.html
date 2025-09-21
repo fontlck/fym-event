@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>FYM EVENT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 </head>
 <body class="bg-neutral-950 text-white font-sans">
 
@@ -18,6 +20,18 @@
 
   <!-- Main -->
   <main class="p-6 space-y-6">
+    <!-- Calendar -->
+    <section class="bg-neutral-900 rounded-2xl shadow p-4 border border-neutral-800">
+      <div class="flex justify-between items-center mb-2">
+        <h2 id="monthLabel" class="text-lg font-bold">ปฏิทิน</h2>
+      </div>
+      <div class="grid grid-cols-7 gap-2 text-center text-sm text-neutral-400 mb-2">
+        <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+      </div>
+      <div id="calendarGrid" class="grid grid-cols-7 gap-2 min-h-[300px]"></div>
+      <div id="legend" class="flex flex-wrap gap-2 mt-4"></div>
+    </section>
+
     <!-- Card View -->
     <section>
       <h2 class="text-lg font-semibold mb-4">ทั้งหมด</h2>
@@ -27,10 +41,6 @@
     </section>
   </main>
 
-  <!-- ✅ โหลด dayjs ก่อน -->
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-
-  <!-- ✅ script ของเรา -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>
