@@ -1,4 +1,4 @@
-// api.js — Firestore CRUD + Realtime
+// api.js — Firestore CRUD
 import { db } from './firebase.js';
 import { 
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy 
