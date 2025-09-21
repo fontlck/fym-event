@@ -2,7 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 👉 นำ config ของคุณจาก Firebase Console มาใส่ตรงนี้
+// 👉 Config จริงของคุณ (เอามาจาก Firebase Console)
 const firebaseConfig = {
   apiKey: "AIzaSyB-G1eSiwYJQgjALiWm4Qb2x1sNPqa191o",
   authDomain: "photobooth-booking.firebaseapp.com",
@@ -13,8 +13,8 @@ const firebaseConfig = {
   measurementId: "G-DBEXZD5CPK"
 };
 
-// ✅ Initialize Firebase
+// ✅ Init Firebase App
 const app = initializeApp(firebaseConfig);
 
-// ✅ Export Firestore instance
+// ✅ Export Firestore ให้ api.js ใช้ได้
 export const db = getFirestore(app);
