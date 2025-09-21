@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig={
-  apiKey:"YOUR_API_KEY",
+  apiKey:"AIzaSyB-G1eSiwJYQgjALiwMqOb2x1sNPqa19i0",
   authDomain:"photobooth-booking.firebaseapp.com",
   projectId:"photobooth-booking",
   storageBucket:"photobooth-booking.appspot.com",
