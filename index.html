@@ -1,124 +1,107 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FYM EVENT — Photobooth Booking (Firebase Realtime)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <meta name="color-scheme" content="dark light">
-    <style>
-      dialog { padding:0; }
-    </style>
-  </head>
-  <body class="bg-neutral-950 text-neutral-100">
-    <header class="sticky top-0 z-10 backdrop-blur bg-neutral-950/80 border-b border-neutral-800">
-      <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <h1 class="text-3xl font-black tracking-wide text-lime-300">FYM EVENT</h1>
-        <div class="flex gap-2">
-          <button id="addModelBtn" class="px-4 py-2 rounded-2xl bg-indigo-500 hover:bg-indigo-400 text-neutral-900 font-semibold">Add model</button>
-          <button id="addEventBtn" class="px-4 py-2 rounded-2xl bg-lime-300 hover:bg-lime-200 text-neutral-900 font-semibold">Add event</button>
+<head>
+  <meta charset="UTF-8">
+  <title>FYM EVENT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-neutral-950 text-white font-sans">
+
+  <!-- Header -->
+  <header class="flex items-center justify-between px-6 py-4 bg-neutral-900 border-b border-neutral-800">
+    <h1 class="text-2xl font-bold text-lime-400">📸 FYM EVENT</h1>
+    <div class="space-x-2">
+      <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white">Add model</button>
+      <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-500 hover:bg-lime-400 text-black">Add event</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="p-6 space-y-6">
+    <!-- Search + Upcoming -->
+    <section class="grid md:grid-cols-2 gap-6">
+      <div class="bg-neutral-900 rounded-2xl shadow p-4 border border-neutral-800">
+        <h2 class="text-lg font-semibold mb-2">วันนี้</h2>
+        <input id="searchInput" placeholder="ค้นหา: ชื่องาน / สถานที่ / staff"
+          class="w-full px-3 py-2 rounded-lg bg-neutral-800 border border-neutral-700 text-sm mb-3">
+        <div>
+          <h3 class="text-indigo-400 font-medium mb-2">Upcoming</h3>
+          <div id="upcomingList" class="space-y-2 text-sm"></div>
         </div>
       </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-      <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="rounded-2xl p-4 bg-neutral-900 border border-neutral-800 space-y-3">
-          <div class="text-neutral-300 text-sm">วันนี้</div>
-          <div id="todayText" class="text-2xl font-semibold"></div>
-          <input id="searchInput" placeholder="ค้นหา: ชื่องาน / สถานที่ / staff" class="w-full px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700 focus:outline-none" />
-          <div class="font-semibold text-lg text-indigo-300">Upcoming (5)</div>
-          <div id="upcomingList" class="grid gap-3"></div>
+      <!-- Calendar -->
+      <div class="bg-neutral-900 rounded-2xl shadow p-4 border border-neutral-800">
+        <div class="flex justify-between items-center mb-2">
+          <button id="prevMonth" class="text-neutral-400 hover:text-white">◀</button>
+          <h2 id="monthLabel" class="text-lg font-bold">ปฏิทิน</h2>
+          <button id="nextMonth" class="text-neutral-400 hover:text-white">▶</button>
         </div>
+        <div class="grid grid-cols-7 gap-2 text-center text-sm text-neutral-400 mb-2">
+          <div>จันทร์</div><div>อังคาร</div><div>พุธ</div><div>พฤหัสฯ</div><div>ศุกร์</div><div>เสาร์</div><div>อาทิตย์</div>
+        </div>
+        <div id="calendarGrid" class="grid grid-cols-7 gap-2 min-h-[300px]"></div>
+        <div id="legend" class="flex flex-wrap gap-2 mt-4"></div>
+      </div>
+    </section>
 
-        <div class="rounded-2xl p-4 bg-neutral-900 border border-neutral-800 lg:col-span-2">
-          <div class="flex items-center justify-between mb-3">
-            <div class="font-semibold text-lg text-indigo-300">ปฏิทิน</div>
-            <div class="flex items-center gap-2">
-              <button id="prevMonth" class="px-3 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700">‹</button>
-              <div id="monthLabel" class="min-w-[180px] text-center"></div>
-              <button id="nextMonth" class="px-3 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700">›</button>
-            </div>
-          </div>
-          <div class="grid grid-cols-7 text-xs text-neutral-400 mb-1">
-            <div>จันทร์</div><div>อังคาร</div><div>พุธ</div><div>พฤหัสฯ</div><div>ศุกร์</div><div>เสาร์</div><div>อาทิตย์</div>
-          </div>
-          <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
-          <div class="mt-3 text-sm text-neutral-400 flex flex-wrap gap-2" id="legend"></div>
-        </div>
-      </section>
+    <!-- Card View -->
+    <section>
+      <h2 class="text-lg font-semibold mb-4">ทั้งหมด</h2>
+      <div id="eventsList" class="grid md:grid-cols-2 gap-6">
+        <!-- app.js จะ render การ์ดลงตรงนี้ -->
+      </div>
+    </section>
+  </main>
 
-      <section class="rounded-2xl p-4 bg-neutral-900 border border-neutral-800">
-        <div class="flex items-center justify-between mb-3">
-          <div class="font-semibold text-lg text-indigo-300">ทั้งหมด</div>
-          <div class="text-sm text-neutral-400">คลิกเพื่อแก้ไข</div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead class="text-neutral-400">
-              <tr class="[&>th]:py-2 [&>th]:px-2 text-left border-b border-neutral-800">
-                <th>วันที่</th><th>งาน</th><th>สถานที่</th><th>โมเดล</th><th>เวลา</th><th>ราคา</th><th>สถานะ</th><th></th>
-              </tr>
-            </thead>
-            <tbody id="eventsTableBody"></tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+  <!-- Dialog: Add/Edit Event -->
+  <dialog id="eventDialog" class="p-0 rounded-xl w-11/12 md:w-2/3">
+    <form id="eventForm" class="bg-neutral-900 p-6 space-y-4">
+      <input type="hidden" name="id">
+      <h3 class="text-lg font-bold mb-4">Add / Edit Event</h3>
+      <div class="grid md:grid-cols-2 gap-4">
+        <input name="eventName" placeholder="ชื่องาน" class="px-3 py-2 rounded bg-neutral-800">
+        <input name="location" placeholder="สถานที่" class="px-3 py-2 rounded bg-neutral-800">
+        <input name="mapLink" placeholder="Google Map link" class="px-3 py-2 rounded bg-neutral-800">
+        <select name="model" class="px-3 py-2 rounded bg-neutral-800"></select>
+        <input type="date" name="startDate" class="px-3 py-2 rounded bg-neutral-800">
+        <input type="date" name="endDate" class="px-3 py-2 rounded bg-neutral-800">
+        <input name="staff" placeholder="Staff" class="px-3 py-2 rounded bg-neutral-800">
+        <input type="date" name="installDate" class="px-3 py-2 rounded bg-neutral-800">
+        <input type="time" name="installTime" class="px-3 py-2 rounded bg-neutral-800">
+        <input type="time" name="openTime" class="px-3 py-2 rounded bg-neutral-800">
+        <input type="time" name="closeTime" class="px-3 py-2 rounded bg-neutral-800">
+        <input name="price" placeholder="ราคา" class="px-3 py-2 rounded bg-neutral-800">
+        <input name="transportFee" placeholder="ค่าขนส่ง" class="px-3 py-2 rounded bg-neutral-800">
+      </div>
+      <textarea name="note" placeholder="หมายเหตุ" class="w-full px-3 py-2 rounded bg-neutral-800"></textarea>
+      <div class="flex space-x-4">
+        <label><input type="checkbox" name="paidDeposit"> มัดจำแล้ว</label>
+        <label><input type="checkbox" name="paidFull"> ชำระครบแล้ว</label>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="eventDialog.close()" class="px-4 py-2 rounded bg-neutral-700">ยกเลิก</button>
+        <button type="submit" class="px-4 py-2 rounded bg-lime-500 text-black">บันทึก</button>
+      </div>
+    </form>
+  </dialog>
 
-    <!-- Event Modal -->
-    <dialog id="eventDialog" class="rounded-2xl bg-neutral-900 border border-neutral-700 w-[720px] max-w-[95vw]">
-      <form id="eventForm" method="dialog" class="p-4 space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="text-lg font-semibold">Add / Edit Event</div>
-          <button type="button" id="closeEventDialog" class="px-3 py-1 rounded-xl bg-neutral-800 hover:bg-neutral-700">✕</button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <input name="eventName" placeholder="ชื่องาน" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700" required>
-          <input name="location" placeholder="สถานที่" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input name="mapLink" placeholder="Google Map link" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <select name="model" id="modelSelect" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700"></select>
-          <input type="date" name="startDate" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700" required>
-          <input type="date" name="endDate" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input name="staff" placeholder="Staff" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input type="date" name="installDate" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input type="time" name="installTime" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input type="time" name="openTime" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input type="time" name="closeTime" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input type="number" name="price" placeholder="ราคา" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <input type="number" name="transportFee" placeholder="ค่าขนส่ง" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-          <textarea name="note" placeholder="หมายเหตุ" class="px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700 md:col-span-2"></textarea>
-          <label class="flex items-center gap-2"><input type="checkbox" name="paidDeposit"> มัดจำแล้ว</label>
-          <label class="flex items-center gap-2"><input type="checkbox" name="paidFull"> ชำระครบแล้ว</label>
-        </div>
-        <div class="flex items-center justify-between pt-2">
-          <button type="button" id="deleteEventBtn" class="hidden px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500">ลบ</button>
-          <div class="flex gap-2">
-            <button value="cancel" class="px-3 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700">ยกเลิก</button>
-            <button id="saveEventBtn" value="default" class="px-3 py-2 rounded-xl bg-lime-300 text-neutral-900 font-semibold hover:bg-lime-200">บันทึก</button>
-          </div>
-        </div>
-      </form>
-    </dialog>
+  <!-- Dialog: Add/Edit Model -->
+  <dialog id="modelDialog" class="p-0 rounded-xl w-96">
+    <form id="modelForm" class="bg-neutral-900 p-6 space-y-4">
+      <input type="hidden" name="id">
+      <h3 class="text-lg font-bold mb-4">Add / Edit Model</h3>
+      <input name="name" placeholder="ชื่อโมเดล" class="w-full px-3 py-2 rounded bg-neutral-800">
+      <input name="size" placeholder="ขนาด" class="w-full px-3 py-2 rounded bg-neutral-800">
+      <input name="colorBG" placeholder="สีพื้นหลัง (hex)" class="w-full px-3 py-2 rounded bg-neutral-800">
+      <input name="colorText" placeholder="สีตัวอักษร (hex)" class="w-full px-3 py-2 rounded bg-neutral-800">
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="modelDialog.close()" class="px-4 py-2 rounded bg-neutral-700">ยกเลิก</button>
+        <button type="submit" class="px-4 py-2 rounded bg-lime-500 text-black">บันทึก</button>
+      </div>
+    </form>
+  </dialog>
 
-    <!-- Model Modal -->
-    <dialog id="modelDialog" class="rounded-2xl bg-neutral-900 border border-neutral-700 w-[520px] max-w-[95vw]">
-      <form id="modelForm" method="dialog" class="p-4 space-y-4">
-        <div class="flex items-center justify-between">
-          <div class="text-lg font-semibold">Add / Edit Model</div>
-          <button type="button" id="closeModelDialog" class="px-3 py-1 rounded-xl bg-neutral-800 hover:bg-neutral-700">✕</button>
-        </div>
-        <input name="name" placeholder="ชื่อโมเดล" class="w-full px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700" required>
-        <input name="size" placeholder="ขนาด" class="w-full px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-        <input name="colorBG" placeholder="สีพื้น (hex)" class="w-full px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-        <input name="colorText" placeholder="สีตัวอักษร (hex)" class="w-full px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700">
-        <div class="flex justify-end gap-2">
-          <button value="cancel" class="px-3 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700">ยกเลิก</button>
-          <button id="saveModelBtn" value="default" class="px-3 py-2 rounded-xl bg-indigo-400 text-neutral-900 font-semibold hover:bg-indigo-300">บันทึก</button>
-        </div>
-      </form>
-    </dialog>
-
-    <script type="module" src="./app.js"></script>
-  </body>
+  <script type="module" src="./app.js"></script>
+</body>
 </html>
