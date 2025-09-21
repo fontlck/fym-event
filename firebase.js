@@ -1,1 +1,1 @@
-/* firebase.js with config */
+// FYM-EVENT firebase.js placeholder
