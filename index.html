@@ -1,1 +1,109 @@
-<!-- FYM-EVENT index.html placeholder -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FYM EVENT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isBetween.js"></script>
+  <script>dayjs.extend(window.dayjs_plugin_isBetween);</script>
+</head>
+<body class="bg-black text-white min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="p-4 flex justify-between items-center bg-neutral-900 border-b border-neutral-800">
+    <h1 class="text-2xl font-bold text-white">FYM EVENT</h1>
+    <div class="space-x-2">
+      <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white">Add Model</button>
+      <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-400 hover:bg-lime-300 text-black">Add Event</button>
+    </div>
+  </header>
+
+  <main class="flex-1 p-6 space-y-6 max-w-6xl mx-auto w-full">
+    <!-- Calendar -->
+    <section class="bg-neutral-900 rounded-xl p-4">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-lg font-semibold">ปฏิทิน</h2>
+        <div class="space-x-2">
+          <button id="prevMonth" class="px-3 py-1 rounded bg-neutral-800 hover:bg-neutral-700">‹</button>
+          <button id="nextMonth" class="px-3 py-1 rounded bg-neutral-800 hover:bg-neutral-700">›</button>
+        </div>
+      </div>
+      <div id="calendar" class="rounded-lg"></div>
+    </section>
+
+    <!-- Stats -->
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-neutral-900 rounded-xl p-4 text-center">
+        <div id="statTotal" class="text-3xl font-bold text-lime-400">0</div>
+        <p class="mt-1 text-neutral-300">จำนวนงานในปีนี้</p>
+      </div>
+      <div class="bg-neutral-900 rounded-xl p-4 text-center">
+        <div id="statPast" class="text-3xl font-bold text-indigo-400">0</div>
+        <p class="mt-1 text-neutral-300">งานที่ผ่านไปแล้ว</p>
+      </div>
+      <div class="bg-neutral-900 rounded-xl p-4 text-center">
+        <div id="statUpcoming" class="text-3xl font-bold text-rose-500">0</div>
+        <p class="mt-1 text-neutral-300">งานที่กำลังจะมาถึง</p>
+      </div>
+    </section>
+
+    <!-- Events list -->
+    <section>
+      <h2 id="eventsHeader" class="text-lg font-semibold mb-4">งานในเดือนนี้</h2>
+      <div id="eventsList"></div>
+    </section>
+  </main>
+
+  <!-- Event Modal -->
+  <div id="eventModal" class="hidden fixed inset-0 bg-black/70 z-50">
+    <div class="h-full w-full flex items-center justify-center p-4">
+      <div class="bg-neutral-900 p-6 rounded-xl w-full max-w-xl">
+        <h3 class="text-xl font-bold mb-4">เพิ่ม/แก้ไข งาน</h3>
+        <form id="eventForm" class="space-y-3">
+          <input type="hidden" name="id" />
+          <input type="text" name="eventName" placeholder="ชื่องาน" class="w-full p-2 rounded bg-neutral-800 text-white" required />
+          <input type="text" name="location" placeholder="สถานที่" class="w-full p-2 rounded bg-neutral-800 text-white" />
+          <select name="model" class="w-full p-2 rounded bg-neutral-800 text-white"></select>
+          <input type="date" name="startDate" class="w-full p-2 rounded bg-neutral-800 text-white" required />
+          <input type="date" name="endDate" class="w-full p-2 rounded bg-neutral-800 text-white" />
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" id="closeEventModal" class="px-4 py-2 bg-neutral-700 rounded">ยกเลิก</button>
+            <button type="submit" class="px-4 py-2 bg-lime-400 text-black rounded">บันทึก</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Modal -->
+  <div id="modelModal" class="hidden fixed inset-0 bg-black/70 z-50">
+    <div class="h-full w-full flex items-center justify-center p-4">
+      <div class="bg-neutral-900 p-6 rounded-xl w-full max-w-lg">
+        <h3 class="text-xl font-bold mb-4">เพิ่ม/แก้ไข Model</h3>
+        <form id="modelForm" class="space-y-3">
+          <input type="hidden" name="id" />
+          <input type="text" name="name" placeholder="ชื่อ Model" class="w-full p-2 rounded bg-neutral-800 text-white" required />
+          <input type="text" name="size" placeholder="ขนาด" class="w-full p-2 rounded bg-neutral-800 text-white" />
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm mb-1">สีพื้น</label>
+              <input type="color" name="colorBG" value="#6366f1" class="w-full h-10 rounded bg-neutral-800" />
+            </div>
+            <div>
+              <label class="block text-sm mb-1">สีตัวอักษร</label>
+              <input type="color" name="colorText" value="#ffffff" class="w-full h-10 rounded bg-neutral-800" />
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" id="closeModelModal" class="px-4 py-2 bg-neutral-700 rounded">ยกเลิก</button>
+            <button type="submit" class="px-4 py-2 bg-indigo-500 rounded">บันทึก</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
