@@ -1,110 +1,92 @@
-import { watch, list, remove } from './api.js';
+import { watch, list, upsert, remove } from './api.js';
 
 let modelsCache = [];
+let currentMonth = dayjs();
+let allEvents = [];
 
-// ---- Render Cards (sorted latest first, badge + border by model color)
+// ---------- UI helpers
+const $ = (id) => document.getElementById(id);
+const eventModal = $("eventModal");
+const modelModal = $("modelModal");
+const eventForm = $("eventForm");
+const modelForm = $("modelForm");
+
+// ---------- Render Cards (horizontal full width)
 function renderEvents(events, models) {
-  const container = document.getElementById("eventsList");
+  const container = $("eventsList");
   if (!container) return;
   container.innerHTML = "";
 
-  if (!events.length) {
-    container.innerHTML = `<p class="text-neutral-400">ไม่มีงานในระบบ</p>`;
+  // filter เฉพาะงานในเดือนที่เลือก
+  const filtered = events.filter(ev => {
+    const start = dayjs(ev.startDate);
+    const end = ev.endDate ? dayjs(ev.endDate) : start;
+    return start.isSame(currentMonth, "month") || end.isSame(currentMonth, "month");
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = `<p class="text-neutral-400">ไม่มีงานในเดือนนี้</p>`;
     return;
   }
 
-  const sorted = [...events].sort((a, b) => {
-    const da = new Date(a.startDate || "1970-01-01");
-    const db = new Date(b.startDate || "1970-01-01");
-    return db - da; // ใหม่ -> เก่า
-  });
+  const sorted = [...filtered].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
 
   sorted.forEach(ev => {
     const model = models.find(m => m.name === ev.model) || { colorBG: "#6366f1", colorText: "#fff" };
-
     const card = document.createElement("div");
-    card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 mb-6";
+    card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 mb-4 flex flex-col md:flex-row gap-6";
     card.style.borderLeft = `8px solid ${model.colorBG}`;
 
     card.innerHTML = `
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <div class="flex items-center gap-2 mb-1">
-            <span class="px-2 py-0.5 text-xs font-medium rounded-full"
-              style="background:${model.colorBG};color:${model.colorText}">
-              ${ev.model || "-"}
-            </span>
-          </div>
-          <h3 class="text-2xl font-bold text-white">${ev.eventName || "-"}</h3>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="editEvent('${ev.id}')" class="px-5 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-medium">แก้ไข</button>
-          <button onclick="deleteEvent('${ev.id}')" class="px-5 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-medium">ลบ</button>
+      <div class="flex-1 min-w-0">
+        <span class="px-2 py-0.5 text-xs font-medium rounded-full mb-2 inline-block"
+          style="background:${model.colorBG}; color:${model.colorText}">${ev.model || "-"}</span>
+
+        <h3 class="text-2xl font-bold text-white mb-1">${ev.eventName || "-"}</h3>
+        <p class="text-sm text-neutral-400 mb-4">${ev.startDate || ""}${ev.endDate ? " – " + ev.endDate : ""}</p>
+
+        <div class="grid sm:grid-cols-3 gap-4 text-sm">
+          <div><span class="text-neutral-400 block">สถานที่</span>${ev.location || "-"}</div>
+          <div><span class="text-neutral-400 block">วันที่ติดตั้ง</span>${ev.installDate || "-"} ${ev.installTime || ""}</div>
+          <div><span class="text-neutral-400 block">เวลาเปิด-ปิด</span>${ev.openTime || "-"} - ${ev.closeTime || "-"}</div>
+          <div><span class="text-neutral-400 block">Staff</span>${ev.staff || "-"}</div>
+          <div><span class="text-neutral-400 block">ราคา</span>${ev.price || "-"}</div>
+          <div><span class="text-neutral-400 block">ค่าขนส่ง</span>${ev.transportFee || "-"}</div>
+          <div class="sm:col-span-3"><span class="text-neutral-400 block">Note</span>${ev.note || "-"}</div>
         </div>
       </div>
-      <div class="grid sm:grid-cols-2 gap-y-3 gap-x-8 text-sm">
-        <div>
-          <span class="text-neutral-400 block">วันที่</span>
-          <span class="font-medium">${ev.startDate || "-"} – ${ev.endDate || ev.startDate || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">สถานที่</span>
-          <span class="font-medium">${ev.location || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">เวลาเปิด-ปิด</span>
-          <span class="font-medium">${ev.openTime || "-"} - ${ev.closeTime || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">วันที่ติดตั้ง</span>
-          <span class="font-medium">${ev.installDate || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">เวลาติดตั้ง</span>
-          <span class="font-medium">${ev.installTime || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">Staff</span>
-          <span class="font-medium">${ev.staff || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">ราคา</span>
-          <span class="font-medium">${ev.price || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">ค่าขนส่ง</span>
-          <span class="font-medium">${ev.transportFee || "-"}</span>
-        </div>
-        <div>
-          <span class="text-neutral-400 block">สถานะ</span>
-          <span class="font-medium">
-            ${ev.paidFull ? "ชำระครบแล้ว" : ev.paidDeposit ? "มัดจำแล้ว" : "รอชำระ"}
-          </span>
-        </div>
-        <div class="sm:col-span-2">
-          <span class="text-neutral-400 block">Note</span>
-          <span class="font-medium">${ev.note || "-"}</span>
-        </div>
+
+      <div class="flex flex-row md:flex-col gap-2 items-start md:items-end">
+        <button data-edit="${ev.id}" class="px-5 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-medium">แก้ไข</button>
+        <button data-del="${ev.id}" class="px-5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium">ลบ</button>
       </div>
     `;
 
     container.appendChild(card);
   });
+
+  // bind buttons
+  container.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", () => openEventModal(btn.dataset.edit));
+  });
+  container.querySelectorAll("[data-del]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (confirm("ยืนยันการลบงานนี้?")) await remove("events", btn.dataset.del);
+    });
+  });
 }
 
-// ---- Render Calendar (current month) with colored border tags by model
+// ---------- Render Calendar
 function renderCalendar(events, models) {
-  const grid = document.getElementById("calendarGrid");
-  const label = document.getElementById("monthLabel");
+  const grid = $("calendarGrid");
+  const label = $("monthLabel");
   if (!grid || !label) return;
 
   grid.innerHTML = "";
+  label.textContent = currentMonth.format("MMMM YYYY");
 
-  const today = dayjs();
-  label.textContent = today.format("MMMM YYYY");
-
-  const monthStart = today.startOf("month");
-  const monthEnd = today.endOf("month");
+  const monthStart = currentMonth.startOf("month");
+  const monthEnd = currentMonth.endOf("month");
   const start = monthStart.startOf("week");
   const end = monthEnd.endOf("week");
 
@@ -118,18 +100,17 @@ function renderCalendar(events, models) {
     dayNum.textContent = d.date();
     cell.appendChild(dayNum);
 
-    // events that cover this day
     const dayEvents = events.filter(ev => {
       const s = dayjs(ev.startDate);
       const e = ev.endDate ? dayjs(ev.endDate) : s;
-      return (d.isSame(s, "day") || d.isSame(e, "day") || (d.isAfter(s, "day") && d.isBefore(e, "day")));
+      return d.isSame(s, "day") || d.isSame(e, "day") || (d.isAfter(s, "day") && d.isBefore(e, "day"));
     });
 
     dayEvents.forEach(ev => {
       const model = models.find(m => m.name === ev.model) || { colorBG: "#6366f1", colorText: "#fff" };
       const tag = document.createElement("div");
-      tag.className = "mt-1 text-[10px] px-1 rounded border";
-      tag.style.borderColor = model.colorBG;
+      tag.className = "mt-1 text-[10px] px-1 rounded";
+      tag.style.backgroundColor = model.colorBG;
       tag.style.color = model.colorText;
       tag.innerHTML = `<div class="font-semibold truncate">${ev.model || "-"}</div><div class="truncate">${ev.eventName || "-"}</div>`;
       cell.appendChild(tag);
@@ -140,40 +121,124 @@ function renderCalendar(events, models) {
   }
 
   // Legend
-  const legend = document.getElementById("legend");
+  const legend = $("legend");
   legend.innerHTML = models.map(m => 
-    `<span class="text-xs px-2 py-1 rounded-full" style="border:1px solid ${m.colorBG}; color:${m.colorText}">${m.name}</span>`
+    `<span class="text-xs px-2 py-1 rounded-full" style="background:${m.colorBG}; color:${m.colorText}">${m.name}</span>`
   ).join(" ");
 }
 
-// ---- Global handlers (you can wire to modal later)
-window.editEvent = (id) => alert("Edit event: " + id);
-window.deleteEvent = async (id) => {
-  if (confirm("ยืนยันการลบงานนี้?")) await remove("events", id);
-};
+// ---------- Stats
+function renderStats(events) {
+  const now = dayjs();
+  const year = now.year();
+  const total = events.filter(ev => dayjs(ev.startDate).year() === year).length;
+  const past = events.filter(ev => dayjs(ev.endDate || ev.startDate).isBefore(now, "day")).length;
+  const upcoming = events.filter(ev => dayjs(ev.startDate).isAfter(now.subtract(1, "day"), "day")).length;
 
-// ---- Init realtime
-async function init() {
-  modelsCache = await list("models");
-
-  // Initial calendar render (empty events first)
-  renderCalendar([], modelsCache);
-
-  watch("events", (data) => {
-    renderEvents(data, modelsCache);
-    renderCalendar(data, modelsCache);
-  });
-
-  // Watch models too (for color changes)
-  watch("models", (mods) => {
-    modelsCache = mods;
-    // re-render to reflect color changes
-    // we need current events snapshot again, so list once
-    list("events").then(evts => {
-      renderEvents(evts, modelsCache);
-      renderCalendar(evts, modelsCache);
-    });
-  });
+  $("statTotal").textContent = total;
+  $("statPast").textContent = past;
+  $("statUpcoming").textContent = upcoming;
 }
 
+// ---------- Modal: Event
+function openEventModal(id = null) {
+  // reset
+  eventForm.reset();
+  eventForm.id.value = "";
+
+  // fill model dropdown
+  const sel = $("eventModelSelect");
+  sel.innerHTML = modelsCache.map(m => `<option value="${m.name}">${m.name}</option>`).join("");
+
+  if (id) {
+    const ev = allEvents.find(x => x.id === id);
+    if (ev) {
+      Object.keys(ev).forEach(k => {
+        if (eventForm[k] !== undefined) {
+          if (eventForm[k].type === "checkbox") {
+            eventForm[k].checked = !!ev[k];
+          } else {
+            eventForm[k].value = ev[k];
+          }
+        }
+      });
+    }
+  }
+
+  eventModal.classList.remove("hidden");
+}
+function closeEventModal() { eventModal.classList.add("hidden"); }
+$("addEventBtn").addEventListener("click", () => openEventModal());
+$("closeEventModal").addEventListener("click", closeEventModal);
+$("cancelEvent").addEventListener("click", closeEventModal);
+
+eventForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(eventForm).entries());
+  // convert checkbox
+  data.paidDeposit = !!eventForm.paidDeposit.checked;
+  data.paidFull = !!eventForm.paidFull.checked;
+  await upsert("events", data);
+  closeEventModal();
+});
+
+// ---------- Modal: Model
+function openModelModal(id = null) {
+  modelForm.reset();
+  modelForm.id.value = "";
+
+  if (id) {
+    const m = modelsCache.find(x => x.id === id);
+    if (m) {
+      Object.keys(m).forEach(k => {
+        if (modelForm[k] !== undefined) modelForm[k].value = m[k];
+      });
+    }
+  }
+
+  modelModal.classList.remove("hidden");
+}
+function closeModelModal() { modelModal.classList.add("hidden"); }
+$("addModelBtn").addEventListener("click", () => openModelModal());
+$("closeModelModal").addEventListener("click", closeModelModal);
+$("cancelModel").addEventListener("click", closeModelModal);
+
+modelForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(modelForm).entries());
+  await upsert("models", data);
+  closeModelModal();
+});
+
+// ---------- Month Controls
+$("prevMonth").addEventListener("click", () => {
+  currentMonth = currentMonth.subtract(1, "month");
+  renderCalendar(allEvents, modelsCache);
+  renderEvents(allEvents, modelsCache);
+});
+$("nextMonth").addEventListener("click", () => {
+  currentMonth = currentMonth.add(1, "month");
+  renderCalendar(allEvents, modelsCache);
+  renderEvents(allEvents, modelsCache);
+});
+
+// ---------- Init realtime
+async function init() {
+  modelsCache = await list("models");
+  renderCalendar([], modelsCache);
+  renderStats([]);
+
+  watch("events", (data) => {
+    allEvents = data;
+    renderCalendar(allEvents, modelsCache);
+    renderEvents(allEvents, modelsCache);
+    renderStats(allEvents);
+  });
+
+  watch("models", (mods) => {
+    modelsCache = mods;
+    renderCalendar(allEvents, modelsCache);
+    renderEvents(allEvents, modelsCache);
+  });
+}
 init();
