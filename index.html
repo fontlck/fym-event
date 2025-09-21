@@ -1,111 +1,55 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FYM EVENT</title>
-  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Day.js -->
   <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isoWeek.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isBetween.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isBetween.js"></script>
   <script>
-    dayjs.extend(window.dayjs_plugin_isoWeek);
     dayjs.extend(window.dayjs_plugin_isBetween);
   </script>
 </head>
 <body class="bg-black text-white min-h-screen">
+  <div class="container mx-auto p-6">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-white">FYM EVENT</h1>
+      <div class="flex gap-2">
+        <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white">Add Model</button>
+        <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-400 hover:bg-lime-300 text-black">Add Event</button>
+      </div>
+    </header>
 
-  <!-- Header -->
-  <header class="flex justify-between items-center p-4">
-    <h1 class="text-3xl font-extrabold text-white">FYM EVENT</h1>
-    <div class="space-x-2">
-      <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400">Add Model</button>
-      <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-400 text-black hover:bg-lime-300">Add Event</button>
-    </div>
-  </header>
-
-  <main class="p-4 space-y-6">
     <!-- Calendar -->
-    <section class="bg-neutral-900 rounded-2xl p-4 shadow">
-      <h2 class="text-lg font-bold mb-2">ปฏิทิน</h2>
-      <div id="calendar"></div>
+    <section class="mb-6">
+      <h2 class="text-xl font-semibold mb-2">ปฏิทิน</h2>
+      <div id="calendar" class="bg-neutral-900 rounded-2xl p-4"></div>
     </section>
 
     <!-- Stats -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-neutral-900 rounded-xl p-6 text-center">
-        <div id="statsThisYear" class="text-3xl font-bold text-lime-400">0</div>
-        <p class="text-neutral-300">จำนวนงานในปีนี้</p>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-neutral-900 p-4 rounded-xl text-center">
+        <div id="statYear" class="text-2xl font-bold text-lime-400">0</div>
+        <div>จำนวนงานในปีนี้</div>
       </div>
-      <div class="bg-neutral-900 rounded-xl p-6 text-center">
-        <div id="statsPast" class="text-3xl font-bold text-indigo-400">0</div>
-        <p class="text-neutral-300">งานที่ผ่านไปแล้ว</p>
+      <div class="bg-neutral-900 p-4 rounded-xl text-center">
+        <div id="statPast" class="text-2xl font-bold text-indigo-400">0</div>
+        <div>งานที่ผ่านไปแล้ว</div>
       </div>
-      <div class="bg-neutral-900 rounded-xl p-6 text-center">
-        <div id="statsUpcoming" class="text-3xl font-bold text-rose-400">0</div>
-        <p class="text-neutral-300">งานที่กำลังจะมาถึง</p>
+      <div class="bg-neutral-900 p-4 rounded-xl text-center">
+        <div id="statUpcoming" class="text-2xl font-bold text-rose-500">0</div>
+        <div>งานที่กำลังจะมาถึง</div>
       </div>
     </section>
 
-    <!-- Events List -->
+    <!-- Events -->
     <section>
-      <h2 id="eventsHeader" class="text-lg font-bold mb-3">งานในเดือนนี้</h2>
+      <h2 id="eventsHeader" class="text-lg font-semibold mb-4">งานในเดือนนี้</h2>
       <div id="eventsList" class="space-y-4"></div>
     </section>
-  </main>
-
-  <!-- Modals -->
-  <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
-    <div class="bg-neutral-800 rounded-xl p-6 w-full max-w-lg">
-      <h3 class="text-xl font-bold mb-4">Add / Edit Event</h3>
-      <form id="eventForm" class="space-y-4">
-        <input name="eventName" placeholder="ชื่องาน" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="location" placeholder="สถานที่" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="mapLink" placeholder="Google Map link" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="startDate" type="date" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="endDate" type="date" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <select name="model" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700"></select>
-        <input name="staff" placeholder="Staff" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="installDate" type="date" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="installTime" type="time" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="openTime" type="time" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="closeTime" type="time" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="price" placeholder="ราคา" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="transportFee" placeholder="ค่าขนส่ง" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <textarea name="note" placeholder="หมายเหตุ" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700"></textarea>
-        <div class="flex space-x-4">
-          <label class="flex items-center space-x-2"><input type="checkbox" name="paidDeposit" /> <span>มัดจำแล้ว</span></label>
-          <label class="flex items-center space-x-2"><input type="checkbox" name="paidFull" /> <span>ชำระครบแล้ว</span></label>
-        </div>
-        <div class="flex justify-end space-x-2">
-          <button type="button" onclick="closeModal('eventModal')" class="px-4 py-2 bg-neutral-600 rounded">ยกเลิก</button>
-          <button type="submit" class="px-4 py-2 bg-lime-400 text-black rounded">บันทึก</button>
-        </div>
-      </form>
-    </div>
   </div>
 
-  <div id="modelModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
-    <div class="bg-neutral-800 rounded-xl p-6 w-full max-w-md">
-      <h3 class="text-xl font-bold mb-4">Add Model</h3>
-      <form id="modelForm" class="space-y-4">
-        <input name="name" placeholder="ชื่อโมเดล" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="size" placeholder="ขนาด" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="colorBG" type="color" value="#6366f1" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <input name="colorText" type="color" value="#ffffff" class="w-full p-2 rounded bg-neutral-900 border border-neutral-700" />
-        <div class="flex justify-end space-x-2">
-          <button type="button" onclick="closeModal('modelModal')" class="px-4 py-2 bg-neutral-600 rounded">ยกเลิก</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-500 text-white rounded">บันทึก</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Firebase + App -->
-  <script type="module" src="./firebase.js"></script>
-  <script type="module" src="./api.js"></script>
   <script type="module" src="./app.js"></script>
 </body>
 </html>
