@@ -41,13 +41,15 @@ function renderCalendar(events, models) {
     dayBox.appendChild(label);
 
     dayEvents.forEach(ev => {
-      const model = models.find(m => m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()) 
-        || { colorBG: "#6366f1", colorText: "#fff" };
+      const matched = models.find(m =>
+        m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()
+      );
+      const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
 
       const tag = document.createElement("div");
       tag.className = "rounded px-1 py-0.5 text-[10px] leading-tight mb-1";
-      tag.style.background = model.colorBG;
-      tag.style.color = model.colorText;
+      tag.style.background = modelColors.colorBG;
+      tag.style.color = modelColors.colorText;
       tag.innerHTML = `<div>${ev.model || "-"}</div><div>${ev.eventName || "-"}</div>`;
       dayBox.appendChild(tag);
     });
@@ -96,26 +98,25 @@ function renderEvents(events, models) {
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   sorted.forEach(ev => {
-    const model = models.find(m => 
-  m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()
-);
+    const matched = models.find(m =>
+      m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()
+    );
+    const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
 
-console.log("DEBUG model match:", {
-  evModel: ev.model,
-  matchedModel: model ? model.name : "NOT FOUND"
-});
-
-const modelColors = model || { colorBG: "#6366f1", colorText: "#fff" };
-
+    console.log("DEBUG model match:", {
+      evModel: ev.model,
+      matchedModel: matched ? matched.name : "NOT FOUND",
+      usedColor: modelColors.colorBG
+    });
 
     const card = document.createElement("div");
     card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 flex justify-between items-center mb-4";
-    card.style.borderLeft = `8px solid ${model.colorBG}`;
+    card.style.borderLeft = `8px solid ${modelColors.colorBG}`;
 
     card.innerHTML = `
       <div>
         <span class="px-2 py-0.5 text-xs font-medium rounded-full mb-2 inline-block"
-          style="background:${model.colorBG}; color:${model.colorText}">${ev.model || "-"}</span>
+          style="background:${modelColors.colorBG}; color:${modelColors.colorText}">${ev.model || "-"}</span>
         <h3 class="text-xl font-bold text-white">${ev.eventName || "-"}</h3>
         <p class="text-sm text-neutral-400">${ev.location || ""}</p>
         <p class="text-sm text-neutral-400">${ev.startDate || ""}${ev.endDate ? " – " + ev.endDate : ""}</p>
