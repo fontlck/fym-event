@@ -153,6 +153,56 @@ function renderEvents(events, models) {
 
   attachEventActions();
 }
+/* ---------- Models List ---------- */
+function renderModels(models) {
+  const container = $("modelsList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  if (!models.length) {
+    container.innerHTML = `<p class="text-neutral-400">ยังไม่มีโมเดล</p>`;
+    return;
+  }
+
+  models.forEach(m => {
+    const card = document.createElement("div");
+    card.className = "bg-neutral-900 rounded-xl shadow p-4 flex justify-between items-center mb-2";
+    card.innerHTML = `
+      <div>
+        <span class="px-2 py-1 text-xs font-medium rounded" 
+          style="background:${m.colorBG}; color:${m.colorText}">${m.name}</span>
+        <p class="text-sm text-neutral-400">ขนาด: ${m.size || "-"}</p>
+      </div>
+      <div class="flex gap-2">
+        <button data-edit-model="${m.id}" 
+          class="px-3 py-1 rounded bg-indigo-500 hover:bg-indigo-400 text-white text-sm">แก้ไข</button>
+        <button data-del-model="${m.id}" 
+          class="px-3 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-sm">ลบ</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  attachModelActions();
+}
+
+/* ---------- Attach Model Actions ---------- */
+function attachModelActions() {
+  document.querySelectorAll("[data-edit-model]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const model = modelsCache.find(m => m.id === btn.dataset.editModel);
+      openModelModal(model);
+    });
+  });
+
+  document.querySelectorAll("[data-del-model]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      if (confirm("ยืนยันการลบโมเดลนี้?")) {
+        await remove("models", btn.dataset.delModel);
+      }
+    });
+  });
+}
 
 /* ---------- Event Modal ---------- */
 function openEventModal(event = null) {
@@ -309,6 +359,7 @@ function init() {
     modelsCache = models;
     renderCalendar(allEvents, modelsCache);
     renderEvents(allEvents, modelsCache);
+    renderModels(modelsCache);
     populateModelDropdown(); // 🔑 update dropdown ทันที
   });
 
