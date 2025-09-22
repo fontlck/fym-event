@@ -172,6 +172,7 @@ function init() {
 
   watch("models", (models) => {
     modelsCache = models;
+    console.log("ALL MODELS >>>", modelsCache); // 🟢 เพิ่ม log ตรงนี้
     renderCalendar(allEvents, modelsCache);
     renderEvents(allEvents, modelsCache);
   });
