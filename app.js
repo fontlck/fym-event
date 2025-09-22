@@ -3,15 +3,14 @@ import { watch, upsert, remove } from './api.js';
 let modelsCache = [];
 let allEvents = [];
 let currentMonth = dayjs();
+let editingEvent = null;
+let editingModel = null;
 
 const $ = (id) => document.getElementById(id);
 
 // helper สำหรับ normalize ชื่อ
 function normalizeName(name) {
-  return (name || "")
-    .trim()
-    .replace(/\s+/g, " ") // รวม space ซ้ำ
-    .toLowerCase();
+  return (name || "").trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 // helper แปลง array -> map
@@ -19,6 +18,7 @@ function buildModelMap(models) {
   return new Map(models.map(m => [normalizeName(m.name), m]));
 }
 
+/* ---------- Calendar ---------- */
 function renderCalendar(events, models) {
   const calendar = $("calendar");
   const monthLabel = $("monthLabel");
@@ -29,11 +29,8 @@ function renderCalendar(events, models) {
 
   const startOfMonth = currentMonth.startOf("month").day();
   const daysInMonth = currentMonth.daysInMonth();
-
-  // 🔑 สร้าง map
   const modelMap = buildModelMap(models);
 
-  // ช่องว่างก่อนวันแรก
   for (let i = 0; i < startOfMonth; i++) {
     const empty = document.createElement("div");
     empty.className = "h-20 bg-neutral-800 rounded-lg";
@@ -61,12 +58,6 @@ function renderCalendar(events, models) {
       const matched = modelMap.get(evName);
       const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
 
-      console.log("CALENDAR >>>", {
-        evModel: ev.model,
-        matchedModel: matched ? matched.name : "NOT FOUND",
-        usedColor: modelColors.colorBG
-      });
-
       const tag = document.createElement("div");
       tag.className = "rounded px-1 py-0.5 text-[10px] leading-tight mb-1";
       tag.style.background = modelColors.colorBG;
@@ -79,6 +70,7 @@ function renderCalendar(events, models) {
   }
 }
 
+/* ---------- Stats ---------- */
 function renderStats(events) {
   const total = $("totalEvents");
   const past = $("pastEvents");
@@ -97,6 +89,7 @@ function renderStats(events) {
   upcoming.textContent = upcomingEvents.length;
 }
 
+/* ---------- Events List ---------- */
 function renderEvents(events, models) {
   const container = $("eventsList");
   const header = $("eventsHeader");
@@ -117,20 +110,12 @@ function renderEvents(events, models) {
   }
 
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
-  // 🔑 ใช้ modelMap
   const modelMap = buildModelMap(models);
 
   sorted.forEach(ev => {
     const evName = normalizeName(ev.model);
     const matched = modelMap.get(evName);
     const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
-
-    console.log("CARD >>>", {
-      evModel: ev.model,
-      matchedModel: matched ? matched.name : "NOT FOUND",
-      usedColor: modelColors.colorBG
-    });
 
     const card = document.createElement("div");
     card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 flex justify-between items-center mb-4";
@@ -156,16 +141,103 @@ function renderEvents(events, models) {
     container.appendChild(card);
   });
 
-  container.querySelectorAll("[data-edit]").forEach(btn => {
-    btn.addEventListener("click", () => alert("แก้ไข " + btn.dataset.edit));
+  attachEventActions();
+}
+
+/* ---------- Event Modal ---------- */
+function openEventModal(event = null) {
+  $("eventModal").classList.remove("hidden");
+  if (event) {
+    editingEvent = event;
+    $("eventModalTitle").textContent = "Edit Event";
+    $("eventName").value = event.eventName || "";
+    $("eventModel").value = event.model || "";
+    $("eventLocation").value = event.location || "";
+    $("eventStart").value = event.startDate || "";
+    $("eventEnd").value = event.endDate || "";
+    $("eventNote").value = event.note || "";
+  } else {
+    editingEvent = null;
+    $("eventModalTitle").textContent = "Add Event";
+    $("eventName").value = "";
+    $("eventModel").value = "";
+    $("eventLocation").value = "";
+    $("eventStart").value = "";
+    $("eventEnd").value = "";
+    $("eventNote").value = "";
+  }
+}
+function closeEventModal() { $("eventModal").classList.add("hidden"); }
+
+$("addEventBtn").addEventListener("click", () => openEventModal());
+$("cancelEvent").addEventListener("click", closeEventModal);
+$("saveEvent").addEventListener("click", async () => {
+  const data = {
+    id: editingEvent ? editingEvent.id : undefined,
+    eventName: $("eventName").value,
+    model: $("eventModel").value,
+    location: $("eventLocation").value,
+    startDate: $("eventStart").value,
+    endDate: $("eventEnd").value,
+    note: $("eventNote").value,
+  };
+  await upsert("events", data);
+  closeEventModal();
+});
+
+/* ---------- Model Modal ---------- */
+function openModelModal(model = null) {
+  $("modelModal").classList.remove("hidden");
+  if (model) {
+    editingModel = model;
+    $("modelModalTitle").textContent = "Edit Model";
+    $("modelName").value = model.name || "";
+    $("modelSize").value = model.size || "";
+    $("modelColorBG").value = model.colorBG || "#6366f1";
+    $("modelColorText").value = model.colorText || "#fff";
+  } else {
+    editingModel = null;
+    $("modelModalTitle").textContent = "Add Model";
+    $("modelName").value = "";
+    $("modelSize").value = "";
+    $("modelColorBG").value = "#6366f1";
+    $("modelColorText").value = "#ffffff";
+  }
+}
+function closeModelModal() { $("modelModal").classList.add("hidden"); }
+
+$("addModelBtn").addEventListener("click", () => openModelModal());
+$("cancelModel").addEventListener("click", closeModelModal);
+$("saveModel").addEventListener("click", async () => {
+  const data = {
+    id: editingModel ? editingModel.id : undefined,
+    name: $("modelName").value,
+    size: $("modelSize").value,
+    colorBG: $("modelColorBG").value,
+    colorText: $("modelColorText").value,
+  };
+  await upsert("models", data);
+  closeModelModal();
+});
+
+/* ---------- Attach Actions ---------- */
+function attachEventActions() {
+  document.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const ev = allEvents.find(e => e.id === btn.dataset.edit);
+      openEventModal(ev);
+    });
   });
-  container.querySelectorAll("[data-del]").forEach(btn => {
+  document.querySelectorAll("[data-del]").forEach(btn => {
     btn.addEventListener("click", async () => {
-      if (confirm("ยืนยันการลบงานนี้?")) await remove("events", btn.dataset.del);
+      if (confirm("ยืนยันการลบงานนี้?")) {
+        await remove("events", btn.dataset.del);
+      }
     });
   });
 }
 
+/* ---------- Init ---------- */
 function init() {
   $("prevMonth").addEventListener("click", () => {
     currentMonth = currentMonth.subtract(1, "month");
@@ -182,7 +254,6 @@ function init() {
 
   watch("models", (models) => {
     modelsCache = models;
-    console.log("ALL MODELS >>>", modelsCache);
     renderCalendar(allEvents, modelsCache);
     renderEvents(allEvents, modelsCache);
   });
