@@ -6,6 +6,15 @@ let currentMonth = dayjs();
 
 const $ = (id) => document.getElementById(id);
 
+// helper สำหรับ normalize ชื่อ
+function normalizeName(name) {
+  return (name || "")
+    .trim()
+    .replace(/\s+/g, " ")       // ตัด space ซ้ำ
+    .replace(/[^a-zA-Z0-9ก-๙\s]/g, "") // ลบอักขระพิเศษ
+    .toLowerCase();
+}
+
 function renderCalendar(events, models) {
   const calendar = $("calendar");
   const monthLabel = $("monthLabel");
@@ -41,10 +50,15 @@ function renderCalendar(events, models) {
     dayBox.appendChild(label);
 
     dayEvents.forEach(ev => {
-      const matched = models.find(m =>
-        m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()
-      );
+      const evName = normalizeName(ev.model);
+      const matched = models.find(m => normalizeName(m.name) === evName);
       const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
+
+      console.log("CALENDAR >>>", {
+        evModel: ev.model,
+        matchedModel: matched ? matched.name : "NOT FOUND",
+        usedColor: modelColors.colorBG
+      });
 
       const tag = document.createElement("div");
       tag.className = "rounded px-1 py-0.5 text-[10px] leading-tight mb-1";
@@ -98,12 +112,11 @@ function renderEvents(events, models) {
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   sorted.forEach(ev => {
-    const matched = models.find(m =>
-      m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()
-    );
+    const evName = normalizeName(ev.model);
+    const matched = models.find(m => normalizeName(m.name) === evName);
     const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
 
-    console.log("DEBUG model match:", {
+    console.log("CARD >>>", {
       evModel: ev.model,
       matchedModel: matched ? matched.name : "NOT FOUND",
       usedColor: modelColors.colorBG
