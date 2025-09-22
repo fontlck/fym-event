@@ -204,8 +204,7 @@ function closeEventModal() { $("eventModal").classList.add("hidden"); }
 $("addEventBtn").addEventListener("click", () => openEventModal());
 $("cancelEvent").addEventListener("click", closeEventModal);
 $("saveEvent").addEventListener("click", async () => {
-  const data = {
-    id: editingEvent ? editingEvent.id : undefined,
+  let data = {
     eventName: $("eventName").value,
     model: $("eventModel").value,
     location: $("eventLocation").value,
@@ -223,8 +222,20 @@ $("saveEvent").addEventListener("click", async () => {
     paidFull: $("eventPaidFull").checked,
     note: $("eventNote").value,
   };
-  await upsert("events", data);
-  closeEventModal();
+
+  // ✅ ใส่ id เฉพาะตอนแก้ไข
+  if (editingEvent) {
+    data.id = editingEvent.id;
+  }
+
+  try {
+    console.log("Saving event:", data);
+    await upsert("events", data);
+    closeEventModal();
+  } catch (err) {
+    console.error("❌ Error saving event:", err);
+    alert("บันทึกงานไม่สำเร็จ: " + err.message);
+  }
 });
 
 /* ---------- Model Modal ---------- */
