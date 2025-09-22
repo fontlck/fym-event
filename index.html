@@ -25,18 +25,32 @@
 
     <!-- Calendar -->
     <section id="calendarSection" class="mb-6">
-      <div class="bg-neutral-900 p-4 rounded-2xl shadow-lg">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
-          <h2 class="text-lg font-bold">ปฏิทิน</h2>
-          <div class="flex gap-2 items-center">
-            <button id="prevMonth" class="px-2">&lt;</button>
-            <span id="monthLabel" class="font-semibold"></span>
-            <button id="nextMonth" class="px-2">&gt;</button>
-          </div>
-        </div>
-        <div id="calendar" class="grid grid-cols-7 sm:grid-cols-7 md:grid-cols-7 gap-2"></div>
+  <div class="bg-neutral-900 p-4 rounded-2xl shadow-lg">
+    <div class="flex justify-between items-center mb-2">
+      <h2 class="text-lg font-bold">ปฏิทิน</h2>
+      <div class="flex gap-2 items-center">
+        <button id="prevMonth" class="px-2">&lt;</button>
+        <span id="monthLabel" class="font-semibold"></span>
+        <button id="nextMonth" class="px-2">&gt;</button>
       </div>
-    </section>
+    </div>
+
+    <!-- ✅ เพิ่มแถวหัวตารางบอกวัน -->
+    <div class="grid grid-cols-7 gap-2 mb-2 text-center text-sm font-semibold text-neutral-300">
+      <div>Mon</div>
+      <div>Tue</div>
+      <div>Wed</div>
+      <div>Thu</div>
+      <div>Fri</div>
+      <div>Sat</div>
+      <div>Sun</div>
+    </div>
+
+    <!-- ส่วนที่ JS render วัน -->
+    <div id="calendar" class="grid grid-cols-7 gap-2"></div>
+  </div>
+</section>
+
 
     <!-- Stats -->
     <section id="statsSection" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
