@@ -14,6 +14,11 @@ function normalizeName(name) {
     .toLowerCase();
 }
 
+// helper แปลง array -> map
+function buildModelMap(models) {
+  return new Map(models.map(m => [normalizeName(m.name), m]));
+}
+
 function renderCalendar(events, models) {
   const calendar = $("calendar");
   const monthLabel = $("monthLabel");
@@ -24,6 +29,9 @@ function renderCalendar(events, models) {
 
   const startOfMonth = currentMonth.startOf("month").day();
   const daysInMonth = currentMonth.daysInMonth();
+
+  // 🔑 สร้าง map
+  const modelMap = buildModelMap(models);
 
   // ช่องว่างก่อนวันแรก
   for (let i = 0; i < startOfMonth; i++) {
@@ -50,7 +58,7 @@ function renderCalendar(events, models) {
 
     dayEvents.forEach(ev => {
       const evName = normalizeName(ev.model);
-      const matched = models.find(m => normalizeName(m.name) === evName);
+      const matched = modelMap.get(evName);
       const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
 
       console.log("CALENDAR >>>", {
@@ -110,9 +118,12 @@ function renderEvents(events, models) {
 
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
+  // 🔑 ใช้ modelMap
+  const modelMap = buildModelMap(models);
+
   sorted.forEach(ev => {
     const evName = normalizeName(ev.model);
-    const matched = models.find(m => normalizeName(m.name) === evName);
+    const matched = modelMap.get(evName);
     const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
 
     console.log("CARD >>>", {
@@ -171,7 +182,7 @@ function init() {
 
   watch("models", (models) => {
     modelsCache = models;
-    console.log("ALL MODELS >>>", modelsCache); // 🟢 เพิ่ม log ตรงนี้
+    console.log("ALL MODELS >>>", modelsCache);
     renderCalendar(allEvents, modelsCache);
     renderEvents(allEvents, modelsCache);
   });
