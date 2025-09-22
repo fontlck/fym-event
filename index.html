@@ -54,6 +54,10 @@
       <h2 id="eventsHeader" class="text-lg font-bold mb-4">งานในเดือนนี้</h2>
       <div id="eventsList" class="space-y-4"></div>
     </section>
+    <section id="modelsListSection" class="mt-10">
+      <h2 class="text-lg font-bold mb-4">รายการโมเดล</h2>
+      <div id="modelsList" class="space-y-4"></div>
+    </section>
   </div>
 
   <!-- Modal Add/Edit Event -->
@@ -61,7 +65,9 @@
     <div class="bg-neutral-900 p-6 rounded-xl w-96">
       <h3 id="eventModalTitle" class="text-lg font-bold mb-4">Add Event</h3>
       <input id="eventName" placeholder="ชื่องาน" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
-      <input id="eventModel" placeholder="โมเดล" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+      <select id="eventModel" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+  <option value="">-- เลือกโมเดล --</option>
+</select>
       <input id="eventLocation" placeholder="สถานที่" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
       <input id="eventStart" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
       <input id="eventEnd" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">

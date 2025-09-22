@@ -8,14 +8,24 @@ let editingModel = null;
 
 const $ = (id) => document.getElementById(id);
 
-// helper สำหรับ normalize ชื่อ
 function normalizeName(name) {
   return (name || "").trim().replace(/\s+/g, " ").toLowerCase();
 }
-
-// helper แปลง array -> map
 function buildModelMap(models) {
   return new Map(models.map(m => [normalizeName(m.name), m]));
+}
+
+/* ---------- เติม dropdown โมเดล ---------- */
+function populateModelDropdown() {
+  const select = $("eventModel");
+  if (!select) return;
+  select.innerHTML = `<option value="">-- เลือกโมเดล --</option>`;
+  modelsCache.forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m.name;
+    opt.textContent = m.name;
+    select.appendChild(opt);
+  });
 }
 
 /* ---------- Calendar ---------- */
@@ -147,6 +157,8 @@ function renderEvents(events, models) {
 /* ---------- Event Modal ---------- */
 function openEventModal(event = null) {
   $("eventModal").classList.remove("hidden");
+  populateModelDropdown(); // 🔑 โหลดรายชื่อโมเดลทุกครั้ง
+
   if (event) {
     editingEvent = event;
     $("eventModalTitle").textContent = "Edit Event";
@@ -256,6 +268,7 @@ function init() {
     modelsCache = models;
     renderCalendar(allEvents, modelsCache);
     renderEvents(allEvents, modelsCache);
+    populateModelDropdown(); // 🔑 update dropdown ทันที
   });
 
   watch("events", (events) => {
