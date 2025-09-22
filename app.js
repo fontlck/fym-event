@@ -123,6 +123,7 @@ function renderEvents(events, models) {
   const modelMap = buildModelMap(models);
 
   sorted.forEach(ev => {
+    // ✅ ต้องมีตรงนี้
     const evName = normalizeName(ev.model);
     const matched = modelMap.get(evName);
     const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
