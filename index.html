@@ -12,21 +12,18 @@
   </script>
 </head>
 <body class="bg-black text-white">
-  <div class="container mx-auto p-4 sm:p-6 max-w-full sm:max-w-3xl lg:max-w-6xl">
-    
-    <!-- Header -->
-    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+  <div class="container mx-auto p-6">
+    <header class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold">FYM EVENT</h1>
       <div class="flex gap-2">
-        <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 w-full sm:w-auto">Add Model</button>
-        <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-400 text-black hover:bg-lime-300 w-full sm:w-auto">Add Event</button>
+        <button id="addModelBtn" class="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400">Add Model</button>
+        <button id="addEventBtn" class="px-4 py-2 rounded-lg bg-lime-400 text-black hover:bg-lime-300">Add Event</button>
       </div>
     </header>
 
-    <!-- Calendar -->
     <section id="calendarSection" class="mb-6">
       <div class="bg-neutral-900 p-4 rounded-2xl shadow-lg">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
+        <div class="flex justify-between items-center mb-2">
           <h2 class="text-lg font-bold">ปฏิทิน</h2>
           <div class="flex gap-2 items-center">
             <button id="prevMonth" class="px-2">&lt;</button>
@@ -34,13 +31,11 @@
             <button id="nextMonth" class="px-2">&gt;</button>
           </div>
         </div>
-        <!-- 📱 Responsive: แบ่งคอลัมน์ตามขนาดจอ -->
-        <div id="calendar" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2"></div>
+        <div id="calendar" class="grid grid-cols-7 gap-2"></div>
       </div>
     </section>
 
-    <!-- Stats -->
-    <section id="statsSection" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <section id="statsSection" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <div class="bg-neutral-900 rounded-xl p-4 text-center">
         <span id="totalEvents" class="text-2xl font-bold text-lime-400">0</span>
         <p>จำนวนงานในปีนี้</p>
@@ -55,20 +50,80 @@
       </div>
     </section>
 
-    <!-- Events -->
     <section id="eventsListSection">
       <h2 id="eventsHeader" class="text-lg font-bold mb-4">งานในเดือนนี้</h2>
       <div id="eventsList" class="space-y-4"></div>
     </section>
-
-    <!-- Models -->
     <section id="modelsListSection" class="mt-10">
       <h2 class="text-lg font-bold mb-4">รายการโมเดล</h2>
       <div id="modelsList" class="space-y-4"></div>
     </section>
   </div>
 
-  <!-- ⚡ Modal ต่าง ๆ จะเหมือนเดิม ไม่ต้องแก้ -->
+<!-- Modal Add/Edit Event -->
+<div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-neutral-900 p-6 rounded-xl w-[28rem] max-h-[90vh] overflow-y-auto">
+    <h3 id="eventModalTitle" class="text-lg font-bold mb-4">Add Event</h3>
+    
+    <input id="eventName" placeholder="ชื่องาน" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <!-- dropdown เลือกโมเดล -->
+    <select id="eventModel" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+      <option value="">-- เลือกโมเดล --</option>
+    </select>
+
+    <input id="eventLocation" placeholder="สถานที่" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventMap" placeholder="Google Map Link" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <label class="text-sm text-neutral-400">วันเริ่มงาน</label>
+    <input id="eventStart" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    
+    <label class="text-sm text-neutral-400">วันสิ้นสุดงาน</label>
+    <input id="eventEnd" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <label class="text-sm text-neutral-400">วันติดตั้ง</label>
+    <input id="eventInstallDate" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventInstallTime" type="time" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <label class="text-sm text-neutral-400">เวลาเปิด / ปิด</label>
+    <div class="flex gap-2">
+      <input id="eventOpenTime" type="time" class="w-1/2 p-2 rounded bg-neutral-800 text-white">
+      <input id="eventCloseTime" type="time" class="w-1/2 p-2 rounded bg-neutral-800 text-white">
+    </div>
+
+    <input id="eventStaff" placeholder="Staff" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventPrice" type="number" placeholder="ราคา" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventTransport" type="number" placeholder="ค่าขนส่ง" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <div class="flex items-center gap-2 mb-2">
+      <input id="eventPaidDeposit" type="checkbox"> <label>มัดจำแล้ว</label>
+      <input id="eventPaidFull" type="checkbox"> <label>ชำระครบแล้ว</label>
+    </div>
+
+    <textarea id="eventNote" placeholder="โน้ต" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white"></textarea>
+
+    <div class="flex justify-end gap-2">
+      <button id="cancelEvent" class="px-3 py-1 bg-neutral-600 rounded">Cancel</button>
+      <button id="saveEvent" class="px-3 py-1 bg-green-500 rounded">Save</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Modal Add/Edit Model -->
+  <div id="modelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-neutral-900 p-6 rounded-xl w-80">
+      <h3 id="modelModalTitle" class="text-lg font-bold mb-4">Add Model</h3>
+      <input id="modelName" placeholder="ชื่อโมเดล" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+      <input id="modelSize" placeholder="ขนาด" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+      <input id="modelColorBG" type="color" class="w-full mb-2 p-2 rounded">
+      <input id="modelColorText" type="color" class="w-full mb-2 p-2 rounded">
+      <div class="flex justify-end gap-2">
+        <button id="cancelModel" class="px-3 py-1 bg-neutral-600 rounded">Cancel</button>
+        <button id="saveModel" class="px-3 py-1 bg-green-500 rounded">Save</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="./app.js"></script>
 </body>
 </html>
