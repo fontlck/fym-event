@@ -157,10 +157,6 @@ function renderEvents(events, models) {
             <p class="font-medium">${ev.installTime || "-"}</p>
           </div>
           <div>
-            <p class="text-neutral-400">โมเดล</p>
-            <p class="font-medium">${ev.model || "-"}</p>
-          </div>
-          <div>
             <p class="text-neutral-400">เวลาเปิด-ปิด</p>
             <p class="font-medium">${ev.openTime || "-"} - ${ev.closeTime || "-"}</p>
           </div>
