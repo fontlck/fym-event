@@ -146,9 +146,12 @@ function renderEvents(events, models) {
             <p class="font-medium">${ev.startDate || "-"} ${ev.endDate ? " – " + ev.endDate : ""}</p>
           </div>
           <div>
-            <p class="text-neutral-400">สถานที่</p>
-            <p class="font-medium">${ev.location || "-"}</p>
-          </div>
+  <p class="text-neutral-400">สถานที่</p>
+  <p class="font-medium">${ev.location || "-"}</p>
+  ${ev.mapLink 
+    ? `<a href="${ev.mapLink}" target="_blank" class="text-blue-400 underline text-xs">ดูแผนที่</a>` 
+    : ""}
+</div>
           <div>
             <p class="text-neutral-400">วันที่ติดตั้ง</p>
             <p class="font-medium">${ev.installDate || "-"}</p>
