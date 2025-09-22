@@ -1,3 +1,4 @@
+// app.js
 import { watch, upsert, remove } from './api.js';
 
 let modelsCache = [];
@@ -123,7 +124,6 @@ function renderEvents(events, models) {
   const modelMap = buildModelMap(models);
 
   sorted.forEach(ev => {
-    // ✅ ต้องมีตรงนี้
     const evName = normalizeName(ev.model);
     const matched = modelMap.get(evName);
     const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
@@ -297,7 +297,7 @@ function closeEventModal() { $("eventModal").classList.add("hidden"); }
 $("addEventBtn").addEventListener("click", () => openEventModal());
 $("cancelEvent").addEventListener("click", closeEventModal);
 $("saveEvent").addEventListener("click", async () => {
-  let data = {
+  const data = {
     eventName: $("eventName").value,
     model: $("eventModel").value,
     location: $("eventLocation").value,
@@ -316,14 +316,12 @@ $("saveEvent").addEventListener("click", async () => {
     note: $("eventNote").value,
   };
 
-  // ✅ ใส่ id เฉพาะตอนแก้ไข
-  if (editingEvent) {
-    data.id = editingEvent.id;
-  }
-
   try {
-    console.log("Saving event:", data);
-    await upsert("events", data);
+    if (editingEvent) {
+      await upsert("events", { ...data, id: editingEvent.id }); // ✅ id แยก
+    } else {
+      await upsert("events", data);
+    }
     closeEventModal();
   } catch (err) {
     console.error("❌ Error saving event:", err);
@@ -356,13 +354,17 @@ $("addModelBtn").addEventListener("click", () => openModelModal());
 $("cancelModel").addEventListener("click", closeModelModal);
 $("saveModel").addEventListener("click", async () => {
   const data = {
-    id: editingModel ? editingModel.id : undefined,
     name: $("modelName").value,
     size: $("modelSize").value,
     colorBG: $("modelColorBG").value,
     colorText: $("modelColorText").value,
   };
-  await upsert("models", data);
+
+  if (editingModel) {
+    await upsert("models", { ...data, id: editingModel.id }); // ✅ id แยก
+  } else {
+    await upsert("models", data);
+  }
   closeModelModal();
 });
 
@@ -403,7 +405,7 @@ function init() {
     renderCalendar(allEvents, modelsCache);
     renderEvents(allEvents, modelsCache);
     renderModels(modelsCache);
-    populateModelDropdown(); // 🔑 update dropdown ทันที
+    populateModelDropdown();
   });
 
   watch("events", (events) => {
