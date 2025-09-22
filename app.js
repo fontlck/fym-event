@@ -122,34 +122,52 @@ function renderEvents(events, models) {
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
   const modelMap = buildModelMap(models);
 
-  sorted.forEach(ev => {
-    const evName = normalizeName(ev.model);
-    const matched = modelMap.get(evName);
-    const modelColors = matched || { colorBG: "#6366f1", colorText: "#fff" };
+  const card = document.createElement("div");
+card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 flex justify-between items-start mb-4";
 
-    const card = document.createElement("div");
-    card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 flex justify-between items-center mb-4";
-    card.style.borderLeft = `8px solid ${modelColors.colorBG}`;
+card.innerHTML = `
+  <div class="flex-1">
+    <span class="px-3 py-1 text-sm font-semibold rounded-full mb-3 inline-block"
+      style="background:${modelColors.colorBG}; color:${modelColors.colorText}">
+      ${ev.model || "-"}
+    </span>
+    <h3 class="text-2xl font-bold text-white mb-4">${ev.eventName || "-"}</h3>
 
-    card.innerHTML = `
-      <div>
-        <span class="px-2 py-0.5 text-xs font-medium rounded-full mb-2 inline-block"
-          style="background:${modelColors.colorBG}; color:${modelColors.colorText}">${ev.model || "-"}</span>
-        <h3 class="text-xl font-bold text-white">${ev.eventName || "-"}</h3>
-        <p class="text-sm text-neutral-400">${ev.location || ""}</p>
-        <p class="text-sm text-neutral-400">${ev.startDate || ""}${ev.endDate ? " – " + ev.endDate : ""}</p>
-        <p class="text-sm text-neutral-400">เวลา: ${ev.openTime || "-"} - ${ev.closeTime || "-"}</p>
-        <p class="text-sm text-neutral-400">Staff: ${ev.staff || "-"}</p>
-        <p class="text-sm text-neutral-400">Note: ${ev.note || "-"}</p>
-        <p class="text-sm text-neutral-400">ราคา: ${ev.price || "-"} | ค่าขนส่ง: ${ev.transportFee || "-"}</p>
+    <div class="grid grid-cols-2 gap-y-2 text-sm text-neutral-300">
+      <div><span class="font-semibold text-neutral-400">วันที่</span><br>
+        ${ev.startDate || "-"} ${ev.endDate ? "– " + ev.endDate : ""}
       </div>
-      <div class="flex flex-col gap-2">
-        <button data-edit="${ev.id}" class="w-20 text-center px-3 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-medium">แก้ไข</button>
-        <button data-del="${ev.id}" class="w-20 text-center px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-medium">ลบ</button>
+      <div><span class="font-semibold text-neutral-400">สถานที่</span><br>${ev.location || "-"}</div>
+
+      <div><span class="font-semibold text-neutral-400">โมเดล</span><br>${ev.model || "-"}</div>
+      <div><span class="font-semibold text-neutral-400">เวลาเปิด-ปิด</span><br>${ev.openTime || "-"} - ${ev.closeTime || "-"}</div>
+
+      <div><span class="font-semibold text-neutral-400">วันที่ติดตั้ง</span><br>${ev.installDate || "-"}</div>
+      <div><span class="font-semibold text-neutral-400">เวลาติดตั้ง</span><br>${ev.installTime || "-"}</div>
+
+      <div><span class="font-semibold text-neutral-400">Staff</span><br>${ev.staff || "-"}</div>
+      <div><span class="font-semibold text-neutral-400">สถานะ</span><br>
+        ${ev.paidFull ? "ชำระครบแล้ว" : ev.paidDeposit ? "มัดจำแล้ว" : "-"}
       </div>
-    `;
-    container.appendChild(card);
-  });
+
+      <div class="col-span-2">
+        <span class="font-semibold text-neutral-400">Note</span><br>${ev.note || "-"}
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-2 ml-4">
+    <button data-edit="${ev.id}" 
+      class="px-4 py-2 rounded-lg bg-indigo-400 hover:bg-indigo-300 text-black font-semibold">
+      แก้ไข
+    </button>
+    <button data-del="${ev.id}" 
+      class="px-4 py-2 rounded-lg bg-white hover:bg-neutral-200 text-black font-semibold">
+      ลบ
+    </button>
+  </div>
+`;
+
 
   attachEventActions();
 }
