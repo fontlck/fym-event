@@ -60,24 +60,54 @@
     </section>
   </div>
 
-  <!-- Modal Add/Edit Event -->
-  <div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-    <div class="bg-neutral-900 p-6 rounded-xl w-96">
-      <h3 id="eventModalTitle" class="text-lg font-bold mb-4">Add Event</h3>
-      <input id="eventName" placeholder="ชื่องาน" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
-      <select id="eventModel" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
-  <option value="">-- เลือกโมเดล --</option>
-</select>
-      <input id="eventLocation" placeholder="สถานที่" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
-      <input id="eventStart" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
-      <input id="eventEnd" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
-      <textarea id="eventNote" placeholder="โน้ต" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white"></textarea>
-      <div class="flex justify-end gap-2">
-        <button id="cancelEvent" class="px-3 py-1 bg-neutral-600 rounded">Cancel</button>
-        <button id="saveEvent" class="px-3 py-1 bg-green-500 rounded">Save</button>
-      </div>
+<!-- Modal Add/Edit Event -->
+<div id="eventModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+  <div class="bg-neutral-900 p-6 rounded-xl w-[28rem] max-h-[90vh] overflow-y-auto">
+    <h3 id="eventModalTitle" class="text-lg font-bold mb-4">Add Event</h3>
+    
+    <input id="eventName" placeholder="ชื่องาน" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <!-- dropdown เลือกโมเดล -->
+    <select id="eventModel" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+      <option value="">-- เลือกโมเดล --</option>
+    </select>
+
+    <input id="eventLocation" placeholder="สถานที่" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventMap" placeholder="Google Map Link" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <label class="text-sm text-neutral-400">วันเริ่มงาน</label>
+    <input id="eventStart" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    
+    <label class="text-sm text-neutral-400">วันสิ้นสุดงาน</label>
+    <input id="eventEnd" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <label class="text-sm text-neutral-400">วันติดตั้ง</label>
+    <input id="eventInstallDate" type="date" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventInstallTime" type="time" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <label class="text-sm text-neutral-400">เวลาเปิด / ปิด</label>
+    <div class="flex gap-2">
+      <input id="eventOpenTime" type="time" class="w-1/2 p-2 rounded bg-neutral-800 text-white">
+      <input id="eventCloseTime" type="time" class="w-1/2 p-2 rounded bg-neutral-800 text-white">
+    </div>
+
+    <input id="eventStaff" placeholder="Staff" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventPrice" type="number" placeholder="ราคา" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+    <input id="eventTransport" type="number" placeholder="ค่าขนส่ง" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white">
+
+    <div class="flex items-center gap-2 mb-2">
+      <input id="eventPaidDeposit" type="checkbox"> <label>มัดจำแล้ว</label>
+      <input id="eventPaidFull" type="checkbox"> <label>ชำระครบแล้ว</label>
+    </div>
+
+    <textarea id="eventNote" placeholder="โน้ต" class="w-full mb-2 p-2 rounded bg-neutral-800 text-white"></textarea>
+
+    <div class="flex justify-end gap-2">
+      <button id="cancelEvent" class="px-3 py-1 bg-neutral-600 rounded">Cancel</button>
+      <button id="saveEvent" class="px-3 py-1 bg-green-500 rounded">Save</button>
     </div>
   </div>
+</div>
 
   <!-- Modal Add/Edit Model -->
   <div id="modelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">

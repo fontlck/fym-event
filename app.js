@@ -157,7 +157,7 @@ function renderEvents(events, models) {
 /* ---------- Event Modal ---------- */
 function openEventModal(event = null) {
   $("eventModal").classList.remove("hidden");
-  populateModelDropdown(); // 🔑 โหลดรายชื่อโมเดลทุกครั้ง
+  populateModelDropdown();
 
   if (event) {
     editingEvent = event;
@@ -165,8 +165,18 @@ function openEventModal(event = null) {
     $("eventName").value = event.eventName || "";
     $("eventModel").value = event.model || "";
     $("eventLocation").value = event.location || "";
+    $("eventMap").value = event.mapLink || "";
     $("eventStart").value = event.startDate || "";
     $("eventEnd").value = event.endDate || "";
+    $("eventInstallDate").value = event.installDate || "";
+    $("eventInstallTime").value = event.installTime || "";
+    $("eventOpenTime").value = event.openTime || "";
+    $("eventCloseTime").value = event.closeTime || "";
+    $("eventStaff").value = event.staff || "";
+    $("eventPrice").value = event.price || "";
+    $("eventTransport").value = event.transportFee || "";
+    $("eventPaidDeposit").checked = !!event.paidDeposit;
+    $("eventPaidFull").checked = !!event.paidFull;
     $("eventNote").value = event.note || "";
   } else {
     editingEvent = null;
@@ -174,8 +184,18 @@ function openEventModal(event = null) {
     $("eventName").value = "";
     $("eventModel").value = "";
     $("eventLocation").value = "";
+    $("eventMap").value = "";
     $("eventStart").value = "";
     $("eventEnd").value = "";
+    $("eventInstallDate").value = "";
+    $("eventInstallTime").value = "";
+    $("eventOpenTime").value = "";
+    $("eventCloseTime").value = "";
+    $("eventStaff").value = "";
+    $("eventPrice").value = "";
+    $("eventTransport").value = "";
+    $("eventPaidDeposit").checked = false;
+    $("eventPaidFull").checked = false;
     $("eventNote").value = "";
   }
 }
@@ -189,8 +209,18 @@ $("saveEvent").addEventListener("click", async () => {
     eventName: $("eventName").value,
     model: $("eventModel").value,
     location: $("eventLocation").value,
+    mapLink: $("eventMap").value,
     startDate: $("eventStart").value,
     endDate: $("eventEnd").value,
+    installDate: $("eventInstallDate").value,
+    installTime: $("eventInstallTime").value,
+    openTime: $("eventOpenTime").value,
+    closeTime: $("eventCloseTime").value,
+    staff: $("eventStaff").value,
+    price: $("eventPrice").value,
+    transportFee: $("eventTransport").value,
+    paidDeposit: $("eventPaidDeposit").checked,
+    paidFull: $("eventPaidFull").checked,
     note: $("eventNote").value,
   };
   await upsert("events", data);
