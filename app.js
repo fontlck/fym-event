@@ -17,6 +17,7 @@ function renderCalendar(events, models) {
   const startOfMonth = currentMonth.startOf("month").day();
   const daysInMonth = currentMonth.daysInMonth();
 
+  // ช่องว่างก่อนวันแรก
   for (let i = 0; i < startOfMonth; i++) {
     const empty = document.createElement("div");
     empty.className = "h-20 bg-neutral-800 rounded-lg";
@@ -26,7 +27,7 @@ function renderCalendar(events, models) {
   for (let d = 1; d <= daysInMonth; d++) {
     const date = currentMonth.date(d);
     const dayBox = document.createElement("div");
-    dayBox.className = "h-24 bg-neutral-800 rounded-lg p-1 text-xs";
+    dayBox.className = "h-24 bg-neutral-800 rounded-lg p-1 text-xs overflow-y-auto";
 
     const dayEvents = events.filter(ev => {
       const start = dayjs(ev.startDate);
@@ -40,12 +41,14 @@ function renderCalendar(events, models) {
     dayBox.appendChild(label);
 
     dayEvents.forEach(ev => {
-      const model = models.find(m => m.name === ev.model) || { colorBG: "#6366f1", colorText: "#fff" };
+      const model = models.find(m => m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()) 
+        || { colorBG: "#6366f1", colorText: "#fff" };
+
       const tag = document.createElement("div");
-      tag.className = "truncate rounded px-1 text-[10px]";
+      tag.className = "rounded px-1 py-0.5 text-[10px] leading-tight mb-1";
       tag.style.background = model.colorBG;
       tag.style.color = model.colorText;
-      tag.innerHTML = `<div>${ev.model}</div><div>${ev.eventName}</div>`;
+      tag.innerHTML = `<div>${ev.model || "-"}</div><div>${ev.eventName || "-"}</div>`;
       dayBox.appendChild(tag);
     });
 
@@ -93,9 +96,11 @@ function renderEvents(events, models) {
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   sorted.forEach(ev => {
-    const model = models.find(m => m.name === ev.model) || { colorBG: "#6366f1", colorText: "#fff" };
+    const model = models.find(m => m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()) 
+      || { colorBG: "#6366f1", colorText: "#fff" };
+
     const card = document.createElement("div");
-    card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 flex justify-between items-center";
+    card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 flex justify-between items-center mb-4";
     card.style.borderLeft = `8px solid ${model.colorBG}`;
 
     card.innerHTML = `
@@ -105,8 +110,10 @@ function renderEvents(events, models) {
         <h3 class="text-xl font-bold text-white">${ev.eventName || "-"}</h3>
         <p class="text-sm text-neutral-400">${ev.location || ""}</p>
         <p class="text-sm text-neutral-400">${ev.startDate || ""}${ev.endDate ? " – " + ev.endDate : ""}</p>
+        <p class="text-sm text-neutral-400">เวลา: ${ev.openTime || "-"} - ${ev.closeTime || "-"}</p>
         <p class="text-sm text-neutral-400">Staff: ${ev.staff || "-"}</p>
         <p class="text-sm text-neutral-400">Note: ${ev.note || "-"}</p>
+        <p class="text-sm text-neutral-400">ราคา: ${ev.price || "-"} | ค่าขนส่ง: ${ev.transportFee || "-"}</p>
       </div>
       <div class="flex flex-col gap-2">
         <button data-edit="${ev.id}" class="w-20 text-center px-3 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-medium">แก้ไข</button>
