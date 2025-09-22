@@ -96,8 +96,17 @@ function renderEvents(events, models) {
   const sorted = [...filtered].sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
   sorted.forEach(ev => {
-    const model = models.find(m => m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()) 
-      || { colorBG: "#6366f1", colorText: "#fff" };
+    const model = models.find(m => 
+  m.name.trim().toLowerCase() === (ev.model || "").trim().toLowerCase()
+);
+
+console.log("DEBUG model match:", {
+  evModel: ev.model,
+  matchedModel: model ? model.name : "NOT FOUND"
+});
+
+const modelColors = model || { colorBG: "#6366f1", colorText: "#fff" };
+
 
     const card = document.createElement("div");
     card.className = "bg-neutral-900 rounded-2xl shadow-lg p-6 flex justify-between items-center mb-4";
