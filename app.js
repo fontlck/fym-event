@@ -10,8 +10,7 @@ const $ = (id) => document.getElementById(id);
 function normalizeName(name) {
   return (name || "")
     .trim()
-    .replace(/\s+/g, " ")       // ตัด space ซ้ำ
-    .replace(/[^a-zA-Z0-9ก-๙\s]/g, "") // ลบอักขระพิเศษ
+    .replace(/\s+/g, " ") // รวม space ซ้ำ
     .toLowerCase();
 }
 
