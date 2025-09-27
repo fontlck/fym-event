@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0d0d0f;
+  --primary: #ddfe78;
+  --secondary: #a3aaf5;
+  --accent: #ee7944;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: white;
+}
